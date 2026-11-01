@@ -1,0 +1,2569 @@
+﻿<%#
+  This project was programmed by the Next Generation team.
+  If you encounter any problems, open an Issue or log into the Discord server:
+  https://discord.gg/BhJStSa89s
+%>
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= t.dir %>">
+<head>
+  <%- include('partials/head_theme') %>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= t.systemSettings.systemSettings %> — NEXT GENERATION</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Tajawal:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #040010;
+      --surface:  rgba(255,255,255,.04);
+      --surface-2:rgba(255,255,255,.07);
+      --card:     rgba(10,3,30,.75);
+      --purple:   #7c3aed;
+      --purple-l: #a78bfa;
+      --cyan:     #06b6d4;
+      --cyan-l:   #67e8f9;
+      --gold:     #d97706;
+      --gold-l:   #fcd34d;
+      --green:    #22c55e;
+      --border:   rgba(124,58,237,.2);
+      --border-h: rgba(124,58,237,.5);
+      --muted:    rgba(203,194,255,.5);
+      --white:    #f8fafc;
+      --nav-w:    60px;
+    }
+    html, body { min-height: 100%; overflow-x: hidden; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: '<%= t.fontBody %>','Tajawal','Inter',system-ui,sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    #c { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .glow { position: fixed; border-radius: 50%; pointer-events: none; z-index: 1; filter: blur(120px); animation: glow-drift 22s ease-in-out infinite alternate; }
+    .glow-a { width: min(600px,80vw); height: min(600px,80vw); top: -20%; right: -16%; background: radial-gradient(circle,rgba(124,58,237,.28) 0%,transparent 65%); }
+    .glow-b { width: min(400px,60vw); height: min(400px,60vw); bottom: -10%; left: -10%; background: radial-gradient(circle,rgba(6,182,212,.18) 0%,transparent 65%); animation-delay: -11s; }
+    @keyframes glow-drift { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(-4%,6%) scale(1.08)} }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 60px;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 28px;
+      background: rgba(4,0,16,.75); backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+    .topbar-brand .brand-logo { width: 30px; height: 30px; border-radius: 9px; object-fit: cover; flex-shrink: 0; box-shadow: 0 4px 18px rgba(124,58,237,.35); }
+    .topbar-brand .brand-text { font-family: 'Orbitron', monospace; font-size: .9rem; font-weight: 800; letter-spacing: .1em; background: linear-gradient(135deg,var(--white),var(--purple-l)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
+    .lang-select {
+      background: var(--surface); border: 1px solid rgba(255,255,255,.12); border-radius: 10px;
+      color: var(--white); font-size: .8rem; font-weight: 600; padding: 6px 30px 6px 10px;
+      cursor: pointer; outline: none; -webkit-appearance: none; appearance: none; font-family: inherit;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 9px center; background-size: 12px;
+      transition: border-color .18s; min-width: 100px;
+    }
+    .lang-select:hover { border-color: rgba(124,58,237,.5); }
+    .lang-select option { background: #0a0022; color: var(--white); }
+    /* Custom lang dropdown */
+    .lcs-wrap{position:relative;display:inline-block}
+    .lcs-btn{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:var(--white);font-size:.8rem;font-weight:600;padding:6px 10px;cursor:pointer;outline:none;font-family:inherit;transition:border-color .18s,background-color .18s;min-width:100px}
+    .lcs-btn:hover{border-color:rgba(124,58,237,.5);background-color:rgba(124,58,237,.08)}
+    .lcs-wrap.open .lcs-btn{border-color:rgba(124,58,237,.6)}
+    .lcs-flag{display:inline-flex;align-items:center}
+    .lcs-flag .fi,.lcs-item .fi{width:20px;height:15px;border-radius:2px;background-size:cover;flex-shrink:0}
+    .lcs-arrow{flex-shrink:0;transition:transform .18s}
+    .lcs-wrap.open .lcs-arrow{transform:rotate(180deg)}
+    .lcs-menu{display:none;position:absolute;top:calc(100% + 5px);right:0;background:var(--surface,#1a0a3e);border:1px solid rgba(124,58,237,.3);border-radius:10px;padding:4px;list-style:none;margin:0;min-width:130px;z-index:9000;box-shadow:0 8px 24px rgba(4,0,16,.55)}
+    .lcs-wrap.open .lcs-menu{display:block}
+    .lcs-item{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--white);transition:background .15s}
+    .lcs-item:hover,.lcs-item:focus{background:rgba(124,58,237,.18);outline:none}
+    .lcs-item.lcs-active{background:rgba(124,58,237,.25)}
+    .user-chip {
+      display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px;
+      border-radius: 99px; border: 1px solid rgba(255,255,255,.08);
+      background: var(--surface); cursor: pointer; overflow: visible;
+    }
+    .user-chip-avatar { position: relative; width: 26px; height: 26px; flex-shrink: 0; }
+    .user-chip-avatar img.chip-av { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; display: block; }
+    .user-chip-fallback { width: 26px; height: 26px; border-radius: 50%; background: rgba(124,58,237,.25); display: flex; align-items: center; justify-content: center; }
+    .user-chip span { font-size: .8rem; font-weight: 500; color: var(--white); }
+
+    /* ── Profile sidebar ── */
+    .profile-backdrop { position: fixed; inset: 0; z-index: 200; background: transparent; pointer-events: none; transition: background .25s; }
+    .profile-backdrop.open { background: rgba(0,0,0,.55); pointer-events: all; }
+    .profile-sidebar {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 201; width: 300px; max-width: 92vw;
+      background: rgba(8,2,22,.97); border-left: 1px solid rgba(124,58,237,.18);
+      box-shadow: -12px 0 60px rgba(0,0,0,.7); display: flex; flex-direction: column;
+      transform: translateX(110%); transition: transform .32s cubic-bezier(.22,1,.36,1); overflow: hidden;
+    }
+    [dir="rtl"] .profile-sidebar { right: auto; left: 0; border-left: none; border-right: 1px solid rgba(124,58,237,.18); box-shadow: 12px 0 60px rgba(0,0,0,.7); transform: translateX(-110%); }
+    .profile-sidebar.open { transform: translateX(0); }
+    .prof-banner { width: 100%; height: 100px; flex-shrink: 0; position: relative; background: linear-gradient(135deg,#2d0b6b 0%,#0a0020 60%,#06b6d4 100%); }
+    .prof-banner-solid { width: 100%; height: 100%; }
+    .prof-banner-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom,transparent 50%,rgba(8,2,22,.95) 100%); }
+    .prof-close { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); transition: background .18s, color .18s; z-index: 5; }
+    [dir="rtl"] .prof-close { right: auto; left: 10px; }
+    .prof-close:hover { background: rgba(220,38,38,.25); color: #fca5a5; }
+    .prof-avatar-wrap { position: relative; margin: -38px 0 0 20px; width: 80px; height: 80px; flex-shrink: 0; }
+    [dir="rtl"] .prof-avatar-wrap { margin: -38px 20px 0 0; }
+    .prof-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: block; border: 3px solid rgba(8,2,22,.97); box-shadow: 0 0 0 2px rgba(124,58,237,.5); }
+    .prof-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; background: rgba(124,58,237,.25); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; border: 3px solid rgba(8,2,22,.97); }
+    .prof-online-dot { position: absolute; bottom: 4px; right: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--green); border: 2px solid rgba(8,2,22,.97); }
+    [dir="rtl"] .prof-online-dot { right: auto; left: 4px; }
+    .prof-body { flex: 1; overflow-y: auto; padding: 12px 20px 0; scrollbar-width: thin; scrollbar-color: rgba(124,58,237,.25) transparent; }
+    .prof-names { margin-bottom: 14px; }
+    .prof-display-name { font-size: 1rem; font-weight: 700; color: var(--white); }
+    .prof-username { font-size: .82rem; color: var(--muted); }
+    .prof-block { margin-bottom: 14px; }
+    .prof-block-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 5px; }
+    .prof-id-text { font-size: .78rem; font-family: monospace; color: var(--purple-l); background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.2); border-radius: 8px; padding: 6px 10px; cursor: pointer; transition: background .18s; word-break: break-all; }
+    .prof-id-text:hover { background: rgba(124,58,237,.2); }
+    .prof-footer { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,.06); display: flex; flex-direction: column; gap: 8px; }
+    .prof-btn { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; font-size: .83rem; font-weight: 600; text-decoration: none; color: var(--muted); background: var(--surface); border: 1px solid rgba(255,255,255,.06); transition: all .18s; cursor: pointer; }
+    .prof-btn:hover { background: var(--surface-2); color: var(--white); }
+    .prof-btn.help:hover { color: var(--cyan-l); border-color: rgba(6,182,212,.3); }
+    .prof-btn.logout:hover { color: #fca5a5; background: rgba(220,38,38,.12); border-color: rgba(220,38,38,.3); }
+
+    /* ── Page ── */
+    .page-wrap {
+      position: relative; z-index: 10;
+      min-height: 100vh; padding: 80px 28px 60px;
+      display: flex; flex-direction: column; align-items: center;
+      width: 100%;
+    }
+    .page-wrap > * { width: 100%; max-width: 900px; box-sizing: border-box; }
+    .page-header { text-align: center; margin-bottom: 48px; }
+    .page-header h1 {
+      font-family: 'Orbitron', monospace; font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 800; letter-spacing: .08em;
+      background: linear-gradient(135deg, var(--white), var(--purple-l));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 8px;
+    }
+    .page-header p { font-size: .9rem; color: var(--muted); }
+    .badge-ship {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 99px;
+      background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.3);
+      color: var(--purple-l); font-size: .78rem; font-weight: 700; margin-bottom: 18px;
+    }
+    .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; width: 100%; max-width: 900px; }
+    .content-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+      padding: 28px 24px; display: flex; flex-direction: column; gap: 12px;
+      backdrop-filter: blur(20px); transition: border-color .2s, transform .2s;
+    }
+    .content-card:hover { border-color: var(--border-h); transform: translateY(-2px); }
+    .content-card-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink:0;
+      background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.2);
+      display: flex; align-items: center; justify-content: center; color: var(--purple-l);
+    }
+    .content-card h3 { font-size: .95rem; font-weight: 700; color: var(--white); }
+    .content-card p { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+    .badge-soon {
+      display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px;
+      background: rgba(217,119,6,.1); border: 1px solid rgba(217,119,6,.3);
+      color: var(--gold-l); font-size: .72rem; font-weight: 700; align-self: flex-start;
+    }
+
+    /* ── Toggle switch ── */
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+    .toggle-row:last-of-type { border-bottom:none; }
+    .toggle-label { display:flex; flex-direction:column; gap:2px; }
+    .toggle-label span { font-size:.85rem; font-weight:600; color:var(--white); }
+    .toggle-label small { font-size:.75rem; color:var(--muted); }
+    .switch { position:relative; display:inline-block; width:42px; height:24px; flex-shrink:0; }
+    .switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,.1); border-radius:99px; transition:.25s; }
+    .slider:before { content:''; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:var(--white); border-radius:50%; transition:.25s; }
+    .switch input:checked + .slider { background:var(--purple); }
+    .switch input:checked + .slider:before { transform:translateX(18px); }
+    /* ── Code input ── */
+    .code-row { margin-top:14px; display:flex; flex-direction:column; gap:6px; }
+    .code-row.hidden { display:none; }
+    .code-row label { font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+    .code-input-wrap { display:flex; gap:8px; align-items:center; }
+    .code-input { flex:1; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:10px; color:var(--white); font-size:.85rem; padding:8px 12px; outline:none; font-family:monospace; letter-spacing:.1em; transition:border-color .18s; }
+    .code-input:focus { border-color:rgba(124,58,237,.5); }
+    .code-input::placeholder { color:var(--muted); letter-spacing:normal; }
+    .code-toggle-vis { background:none; border:none; cursor:pointer; color:var(--muted); padding:4px; display:flex; align-items:center; }
+    .code-toggle-vis:hover { color:var(--white); }
+    /* ── Save btn ── */
+    .save-btn { display:flex; align-items:center; gap:8px; padding:9px 20px; border-radius:10px; border:none; cursor:pointer; font-size:.83rem; font-weight:700; transition:all .18s; font-family:inherit; }
+    .save-btn.primary { background:var(--purple); color:var(--white); }
+    .save-btn.primary:hover { background:var(--purple-l); color:#1e003d; }
+    .save-btn.primary:disabled { opacity:.5; cursor:default; }
+    .card-actions { display:flex; justify-content:flex-end; padding-top:14px; border-top:1px solid rgba(255,255,255,.05); margin-top:4px; }
+    /* ── Config card spans full width ── */
+    .content-card.config-card { grid-column:1 / -1; }
+    .config-card-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .config-divider { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:14px 0 6px; display:flex; align-items:center; gap:8px; }
+    .config-divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.06); }
+    /* ── Back btn ── */
+    .page-footer { display:flex; justify-content:flex-start; margin-top:32px; }
+    .back-btn { display:inline-flex; align-items:center; gap:9px; padding:11px 24px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:var(--surface); color:var(--muted); font-size:.85rem; font-weight:600; text-decoration:none; transition:all .18s; }
+    .back-btn:hover { background:var(--surface-2); color:var(--white); border-color:rgba(255,255,255,.2); }
+    /* ── Toast ── */
+    .sys-toast { position:fixed; bottom:28px; right:28px; z-index:999; padding:12px 20px; border-radius:12px; font-size:.84rem; font-weight:600; display:flex; align-items:center; gap:10px; pointer-events:none; opacity:0; transform:translateY(8px); transition:opacity .22s,transform .22s; }
+    .sys-toast.show { opacity:1; transform:translateY(0); }
+    .sys-toast.success { background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.3); color:#86efac; }
+    .sys-toast.error { background:rgba(220,38,38,.15); border:1px solid rgba(220,38,38,.3); color:#fca5a5; }
+    [dir="rtl"] .sys-toast { right:auto; left:28px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    /* ── Servers config: allowed tag input ── */
+    .tags-wrap { display:flex; flex-wrap:wrap; gap:6px; padding:8px 10px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:10px; min-height:42px; align-items:center; cursor:text; }
+    .tags-wrap:focus-within { border-color:rgba(124,58,237,.5); }
+    .tag-item { display:inline-flex; align-items:center; gap:6px; padding:4px 6px 4px 12px; background:rgba(124,58,237,.18); border:1px solid rgba(124,58,237,.35); border-radius:99px; font-size:.75rem; font-family:monospace; color:var(--purple-l); line-height:1; }
+    .tag-item .tag-rm { display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:50%; background:rgba(124,58,237,.3); border:none; cursor:pointer; color:var(--purple-l); font-size:.7rem; line-height:1; transition:background .15s,color .15s; flex-shrink:0; }
+    .tag-item .tag-rm:hover { background:rgba(220,38,38,.35); color:#fca5a5; }
+    .tags-hint { font-size:.72rem; color:var(--muted); margin-top:6px; }
+    .tags-input { background:none; border:none; outline:none; color:var(--white); font-size:.82rem; font-family:monospace; min-width:80px; flex:1; }
+    .tags-input::placeholder { color:var(--muted); }
+    .leave-auto-row { opacity:1; transition:opacity .2s; }
+    .leave-auto-row.dimmed { opacity:.4; pointer-events:none; }
+    /* ── Guilds list ── */
+    .guilds-section { width:100%; max-width:900px; margin-top:20px; }
+    .guilds-section-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+    .guilds-section-header h2 { font-size:1rem; font-weight:700; color:var(--white); }
+    .guilds-count { font-size:.78rem; font-weight:700; padding:2px 10px; border-radius:99px; background:rgba(124,58,237,.12); border:1px solid rgba(124,58,237,.25); color:var(--purple-l); }
+    .guild-list { display:flex; flex-direction:column; gap:10px; }
+    .guild-row { display:flex; align-items:center; gap:14px; padding:14px 18px; background:var(--card); border:1px solid var(--border); border-radius:14px; backdrop-filter:blur(20px); transition:border-color .18s; }
+    .guild-row:hover { border-color:var(--border-h); }
+    .guild-row-icon { width:44px; height:44px; border-radius:12px; object-fit:cover; flex-shrink:0; }
+    .guild-row-icon-fallback { width:44px; height:44px; border-radius:12px; background:rgba(124,58,237,.18); display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:700; color:var(--purple-l); flex-shrink:0; }
+    .guild-row-info { flex:1; min-width:0; }
+    .guild-row-name { font-size:.9rem; font-weight:700; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .guild-row-meta { font-size:.75rem; color:var(--muted); margin-top:2px; display:flex; gap:10px; flex-wrap:wrap; }
+    .guild-row-meta span { display:inline-flex; align-items:center; gap:4px; }
+    .badge-allowed { font-size:.68rem; font-weight:700; padding:1px 8px; border-radius:99px; background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.25); color:#86efac; }
+    .guild-row-actions { display:flex; gap:8px; flex-shrink:0; }
+    .btn-leave { display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:9px; border:1px solid rgba(220,38,38,.3); background:rgba(220,38,38,.08); color:#fca5a5; font-size:.78rem; font-weight:700; cursor:pointer; transition:all .18s; font-family:inherit; }
+    .btn-leave:hover { background:rgba(220,38,38,.18); border-color:rgba(220,38,38,.6); }
+    .guilds-loading { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:.85rem; padding:20px 0; }
+    .guilds-empty { color:var(--muted); font-size:.85rem; padding:20px 0; text-align:center; }
+    /* ── Leave modal ── */
+    .modal-backdrop { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.7); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .22s; }
+    .modal-backdrop.open { opacity:1; pointer-events:all; }
+    .modal { background:rgba(10,3,30,.98); border:1px solid rgba(124,58,237,.25); border-radius:20px; padding:28px 28px 24px; width:min(460px,92vw); box-shadow:0 24px 80px rgba(0,0,0,.8); transform:translateY(16px); transition:transform .25s; }
+    .modal-backdrop.open .modal { transform:translateY(0); }
+    .modal-header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+    .modal-guild-icon { width:40px; height:40px; border-radius:10px; object-fit:cover; flex-shrink:0; }
+    .modal-guild-icon-fallback { width:40px; height:40px; border-radius:10px; background:rgba(124,58,237,.18); display:flex; align-items:center; justify-content:center; font-size:.95rem; font-weight:700; color:var(--purple-l); flex-shrink:0; }
+    .modal-title { font-size:1rem; font-weight:700; color:var(--white); }
+    .modal-sub { font-size:.8rem; color:var(--muted); }
+    .modal-body { margin-bottom:24px; }
+    .modal-body p { font-size:.85rem; color:var(--muted); line-height:1.6; margin-bottom:14px; }
+    .modal-options { display:flex; flex-direction:column; gap:10px; }
+    .modal-option { display:flex; align-items:flex-start; gap:12px; padding:14px; border-radius:12px; border:2px solid rgba(255,255,255,.08); cursor:pointer; transition:border-color .18s,background .18s; }
+    .modal-option:hover { border-color:rgba(124,58,237,.4); background:rgba(124,58,237,.06); }
+    .modal-option.selected { border-color:var(--purple); background:rgba(124,58,237,.1); }
+    .modal-option.danger:hover { border-color:rgba(220,38,38,.5); background:rgba(220,38,38,.06); }
+    .modal-option.danger.selected { border-color:rgba(220,38,38,.7); background:rgba(220,38,38,.1); }
+    .modal-opt-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .modal-opt-icon.purple { background:rgba(124,58,237,.2); color:var(--purple-l); }
+    .modal-opt-icon.red { background:rgba(220,38,38,.15); color:#fca5a5; }
+    .modal-opt-text strong { display:block; font-size:.85rem; font-weight:700; color:var(--white); margin-bottom:2px; }
+    .modal-opt-text small { font-size:.75rem; color:var(--muted); }
+    .modal-radio { width:16px; height:16px; accent-color:var(--purple); flex-shrink:0; margin-top:3px; }
+    .modal-footer { display:flex; gap:10px; justify-content:flex-end; }
+    .btn-cancel { padding:9px 20px; border-radius:10px; border:1px solid rgba(255,255,255,.1); background:var(--surface); color:var(--muted); font-size:.83rem; font-weight:600; cursor:pointer; font-family:inherit; transition:all .18s; }
+    .btn-cancel:hover { color:var(--white); background:var(--surface-2); }
+    .btn-confirm-leave { padding:9px 20px; border-radius:10px; border:1px solid rgba(220,38,38,.4); background:rgba(220,38,38,.12); color:#fca5a5; font-size:.83rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .18s; display:flex; align-items:center; gap:7px; }
+    .btn-confirm-leave:hover { background:rgba(220,38,38,.22); }
+    .btn-confirm-leave:disabled { opacity:.5; cursor:default; }
+    /* ── Webhook card ── */
+    .wh-status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-inline-end:6px; background:rgba(255,255,255,.2); flex-shrink:0; }
+    .wh-status-dot.active { background:var(--green); box-shadow:0 0 6px rgba(34,197,94,.6); }
+    .color-swatch-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+    .color-swatch { width:28px; height:28px; border-radius:8px; border:2px solid transparent; cursor:pointer; transition:transform .15s,border-color .15s; flex-shrink:0; }
+    .color-swatch:hover { transform:scale(1.15); }
+    .color-swatch.selected { border-color:var(--white); transform:scale(1.12); }
+    .wh-url-wrap { display:flex; gap:8px; align-items:center; }
+    .wh-url-inp { flex:1; min-width:0; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:10px; color:var(--white); font-size:.82rem; padding:8px 12px; outline:none; font-family:monospace; transition:border-color .18s; }
+    .wh-url-inp:focus { border-color:rgba(124,58,237,.5); }
+    .wh-url-inp::placeholder { color:var(--muted); font-family:inherit; }
+    .wh-clear-btn { display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:9px; border:1px solid rgba(220,38,38,.3); background:rgba(220,38,38,.08); color:#fca5a5; cursor:pointer; transition:all .18s; flex-shrink:0; }
+    .wh-clear-btn:hover { background:rgba(220,38,38,.22); border-color:rgba(220,38,38,.6); }
+    .wh-clear-btn[hidden] { display:none; }
+    .wh-test-btn { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:10px; border:1px solid rgba(124,58,237,.4); background:rgba(124,58,237,.1); color:var(--purple-l); font-size:.75rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .18s; white-space:nowrap; flex-shrink:0; }
+    .wh-test-btn:hover { background:rgba(124,58,237,.22); }
+    .wh-test-btn:disabled { opacity:.4; cursor:default; }
+    .wh-color-inp { width:36px; height:36px; border-radius:8px; border:none; cursor:pointer; padding:0; background:none; flex-shrink:0; }
+    /* ── Log card ── */
+    .log-toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between; margin-bottom:4px; }
+    .log-filter-group { display:flex; gap:6px; flex-wrap:wrap; }
+    .log-filter-btn { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:99px; border:1px solid rgba(255,255,255,.1); background:var(--surface); color:var(--muted); font-size:.72rem; font-weight:700; cursor:pointer; transition:all .15s; font-family:inherit; }
+    .log-filter-btn:hover,.log-filter-btn.active { background:rgba(124,58,237,.2); border-color:rgba(124,58,237,.5); color:var(--purple-l); }
+    .log-clear-btn { display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:10px; border:1px solid rgba(220,38,38,.3); background:rgba(220,38,38,.08); color:#fca5a5; font-size:.75rem; font-weight:700; cursor:pointer; transition:all .18s; font-family:inherit; }
+    .log-clear-btn:hover { background:rgba(220,38,38,.18); border-color:rgba(220,38,38,.6); }
+    .log-clear-btn:disabled { opacity:.4; cursor:default; }
+    .log-list { display:flex; flex-direction:column; gap:6px; max-height:420px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(124,58,237,.25) transparent; padding-right:2px; }
+    .log-list:empty::after { content:attr(data-empty); display:block; text-align:center; padding:28px 0; color:var(--muted); font-size:.83rem; }
+    .log-entry { display:flex; align-items:center; gap:12px; padding:10px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:12px; transition:border-color .15s; }
+    .log-entry:hover { border-color:rgba(124,58,237,.25); }
+    .log-entry-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .log-entry-icon img { width:34px; height:34px; border-radius:10px; object-fit:cover; }
+    .log-icon-login { background:rgba(6,182,212,.12); color:var(--cyan-l); }
+    .log-icon-join  { background:rgba(34,197,94,.12);  color:#86efac; }
+    .log-icon-leave { background:rgba(220,38,38,.1);   color:#fca5a5; }
+    .log-icon-other { background:rgba(124,58,237,.12); color:var(--purple-l); }
+    .log-entry-body { flex:1; min-width:0; }
+    .log-entry-title { font-size:.82rem; font-weight:600; color:var(--white); display:flex; align-items:center; gap:7px; overflow:visible; flex-wrap:wrap; }
+    .log-entry-title-name { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .log-entry-title-id  { font-size:.68rem; font-family:monospace; color:var(--muted); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:6px; padding:1px 6px; flex-shrink:0; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+    .log-entry-sub   { font-size:.72rem; color:var(--muted); margin-top:1px; }
+    .log-entry-time  { font-size:.7rem; color:var(--muted); flex-shrink:0; white-space:nowrap; }
+    /* ── Clear request banner ── */
+    .clear-request-banner { margin-bottom:12px; padding:14px 16px; background:rgba(217,119,6,.09); border:1px solid rgba(217,119,6,.3); border-radius:14px; display:none; }
+    .clear-request-banner.show { display:block; }
+    .crb-title { font-size:.83rem; font-weight:700; color:var(--gold-l); margin-bottom:6px; display:flex; align-items:center; gap:7px; }
+    .crb-body  { font-size:.78rem; color:var(--muted); margin-bottom:10px; line-height:1.55; }
+    .crb-votes { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+    .crb-vote-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:99px; font-size:.7rem; font-weight:700; }
+    .crb-vote-chip.approved  { background:rgba(34,197,94,.12);  border:1px solid rgba(34,197,94,.3);  color:#86efac; }
+    .crb-vote-chip.pending   { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); color:var(--muted); }
+    .crb-vote-chip.rejected  { background:rgba(220,38,38,.1);   border:1px solid rgba(220,38,38,.3);  color:#fca5a5; }
+    .crb-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .crb-btn-approve { padding:6px 16px; border-radius:9px; border:1px solid rgba(34,197,94,.4); background:rgba(34,197,94,.1); color:#86efac; font-size:.75rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .18s; }
+    .crb-btn-approve:hover { background:rgba(34,197,94,.2); }
+    .crb-btn-reject  { padding:6px 16px; border-radius:9px; border:1px solid rgba(220,38,38,.3); background:rgba(220,38,38,.08); color:#fca5a5; font-size:.75rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .18s; }
+    .crb-btn-reject:hover  { background:rgba(220,38,38,.18); }
+    .crb-btn-cancel  { padding:6px 16px; border-radius:9px; border:1px solid rgba(255,255,255,.1); background:var(--surface); color:var(--muted); font-size:.75rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .18s; }
+    .crb-btn-cancel:hover  { background:var(--surface-2); color:var(--white); }
+    /* ── Ships card ── */
+    .ships-chips { display:flex; flex-wrap:wrap; gap:8px; min-height:36px; margin-bottom:12px; }
+    .ships-chips:empty::after { content:'No ships configured'; color:var(--muted); font-size:.78rem; align-self:center; }
+    .ships-chip { display:inline-flex; align-items:center; gap:8px; padding:4px 8px 4px 4px; background:rgba(124,58,237,.10); border:1px solid rgba(124,58,237,.3); border-radius:99px; transition:background .15s, border-color .15s; }
+    .ships-chip:hover { background:rgba(124,58,237,.18); border-color:rgba(124,58,237,.5); }
+    .ships-chip-av { width:26px; height:26px; border-radius:50%; object-fit:cover; flex-shrink:0; background:rgba(124,58,237,.3); border:1.5px solid rgba(124,58,237,.4); }
+    .ships-chip-info { display:flex; flex-direction:column; max-width:120px; }
+    .ships-chip-name { font-size:.76rem; font-weight:600; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.3; }
+    .ships-chip-id { font-size:.62rem; color:var(--muted); font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+    .ships-chip-remove { display:flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; border:none; background:rgba(220,38,38,.2); color:#fca5a5; cursor:pointer; padding:0; transition:background .15s; flex-shrink:0; margin-left:2px; }
+    .ships-chip-remove:hover { background:rgba(220,38,38,.5); }
+    .ships-add-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .ships-add-inp { flex:1; min-width:140px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:10px; color:var(--white); font-size:.82rem; padding:8px 12px; outline:none; font-family:monospace; transition:border-color .18s; }
+    .ships-add-inp:focus { border-color:rgba(124,58,237,.5); }
+    .ships-add-inp::placeholder { color:var(--muted); }
+    .ships-add-btn { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:10px; border:1px solid rgba(124,58,237,.4); background:rgba(124,58,237,.12); color:var(--purple-l); font-size:.78rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .18s; white-space:nowrap; flex-shrink:0; }
+    .ships-add-btn:hover { background:rgba(124,58,237,.25); }
+    .ships-add-btn:disabled { opacity:.5; cursor:not-allowed; }
+    /* Ships confirm modal */
+    #ships-confirm-modal, #owners-confirm-modal { position:fixed; inset:0; z-index:999; background:rgba(0,0,0,.72); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
+    #ships-confirm-modal.open, #owners-confirm-modal.open { opacity:1; pointer-events:auto; }
+    .ships-modal-card { background:rgba(14,6,38,.97); border:1px solid rgba(124,58,237,.25); border-radius:18px; width:100%; max-width:340px; overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,.7); transform:scale(.95) translateY(10px); transition:transform .22s cubic-bezier(.22,1,.36,1); }
+    #ships-confirm-modal.open .ships-modal-card { transform:scale(1) translateY(0); }
+    .ships-modal-banner { height:72px; background:linear-gradient(135deg,rgba(124,58,237,.5),rgba(6,182,212,.3)); position:relative; overflow:visible; flex-shrink:0; }
+    .ships-modal-banner img.banner-img { width:100%; height:72px; object-fit:cover; display:block; }
+    .ships-modal-av-wrap { position:absolute; bottom:-28px; left:16px; width:60px; height:60px; z-index:2; }
+    .ships-modal-av { width:60px; height:60px; border-radius:50%; border:4px solid rgba(14,6,38,.97); object-fit:cover; display:block; }
+    .ships-modal-body { padding:36px 18px 14px; }
+    .ships-modal-dname { font-size:1rem; font-weight:800; color:var(--white); line-height:1.2; }
+    .ships-modal-uname { font-size:.74rem; color:var(--muted); margin-top:3px; }
+    .ships-modal-uid { font-size:.68rem; color:var(--muted); font-family:monospace; margin-top:8px; background:rgba(255,255,255,.04); border-radius:6px; padding:4px 8px; display:inline-block; }
+    .ships-modal-question { font-size:.83rem; color:rgba(203,194,255,.8); margin:14px 0 0; border-top:1px solid rgba(255,255,255,.07); padding-top:12px; }
+    .ships-modal-footer { display:flex; gap:10px; justify-content:flex-end; padding:12px 18px 16px; }
+    .ships-modal-cancel { padding:7px 18px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:transparent; color:var(--muted); font-size:.8rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; }
+    .ships-modal-cancel:hover { color:var(--white); background:rgba(255,255,255,.07); }
+    .ships-modal-confirm { padding:7px 18px; border-radius:10px; border:none; background:var(--purple); color:var(--white); font-size:.8rem; font-weight:700; cursor:pointer; font-family:inherit; transition:background .15s; }
+    .ships-modal-confirm:hover { background:#8b5cf6; }
+    .ships-modal-confirm:disabled { opacity:.5; cursor:not-allowed; }
+    /* ── Sessions card ── */
+    .sess-list { display:flex; flex-direction:column; gap:8px; min-height:50px; }
+    .sess-list:empty::after { content:'No active sessions'; color:var(--muted); font-size:.78rem; display:block; padding:12px 0; text-align:center; }
+    .sess-row { display:flex; align-items:center; gap:12px; padding:10px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:12px; flex-wrap:wrap; }
+    .sess-row.is-self { border-color:rgba(124,58,237,.3); background:rgba(124,58,237,.06); }
+    .sess-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .sess-avatar img { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+    .sess-info { flex:1; min-width:120px; }
+    .sess-name { font-size:.83rem; font-weight:700; color:var(--white); display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+    .sess-uid { font-size:.68rem; font-family:monospace; color:var(--muted); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:6px; padding:1px 6px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .sess-self-badge { font-size:.65rem; font-weight:800; padding:1px 7px; border-radius:99px; background:rgba(124,58,237,.2); border:1px solid rgba(124,58,237,.4); color:var(--purple-l); flex-shrink:0; }
+    .sess-meta { font-size:.72rem; color:var(--muted); margin-top:2px; display:flex; gap:10px; flex-wrap:wrap; }
+    .sess-kill-btn { display:flex; align-items:center; gap:5px; padding:6px 12px; border-radius:9px; border:1px solid rgba(220,38,38,.3); background:rgba(220,38,38,.08); color:#fca5a5; font-size:.72rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .18s; flex-shrink:0; }
+    .sess-kill-btn:hover { background:rgba(220,38,38,.2); }
+    .sess-kill-btn:disabled { opacity:.4; cursor:default; }
+    .sess-card-hdr { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .page-wrap.page-wrap-guilds { padding-top:0; justify-content:flex-start; min-height:auto; }
+    @media (max-width:768px) {
+      .topbar { padding:0 14px; }
+      .user-chip span { display:none; }
+      .lang-select { min-width:70px; font-size:.72rem; }
+      .page-wrap { padding:72px 14px 40px !important; }
+      .page-wrap.page-wrap-guilds { padding-top:0 !important; }
+      .page-wrap > * { max-width:100%; }
+      .content-card { padding:20px 16px !important; }
+      .page-header { margin-bottom:28px; }
+      .ships-add-btn { flex:1; justify-content:center; }
+      .content-card:hover { transform:none; }
+    }
+    @media (max-width:540px) {
+      .topbar { padding:0 10px; }
+      .lang-select { min-width:60px; padding:5px 22px 5px 8px; }
+      .page-wrap { padding:68px 10px 36px !important; }
+      .page-wrap.page-wrap-guilds { padding-top:0 !important; }
+      .content-card { padding:16px 12px !important; }
+      .sess-card-hdr { flex-direction:column; align-items:flex-start; }
+      .sess-uid { max-width:90px; }
+      .sess-row { gap:8px; padding:10px; }
+      .log-toolbar { flex-direction:column; align-items:flex-start; }
+      .log-filter-group { flex-wrap:wrap; }
+      .guild-row { flex-wrap:wrap; }
+      .guild-row-actions { width:100%; }
+      .btn-leave { width:100%; justify-content:center; }
+      .geo-fields { grid-template-columns:1fr; }
+      .geo-field.full { grid-column:1; }
+    }
+    /* ── Log dots button ── */
+    .log-dots-btn { display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04); color:var(--muted); cursor:pointer; transition:all .15s; flex-shrink:0; margin-inline-start:4px; }
+    .log-dots-btn:hover { background:rgba(124,58,237,.15); border-color:rgba(124,58,237,.35); color:var(--purple-l); }
+    /* ── Geo modal ── */
+    .geo-modal-backdrop { position:fixed; inset:0; z-index:800; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); opacity:0; visibility:hidden; transition:opacity .2s,visibility .2s; }
+    .geo-modal-backdrop.open { opacity:1; visibility:visible; }
+    .geo-modal { width:min(440px,94vw); background:var(--card); border:1px solid rgba(255,255,255,.1); border-radius:18px; padding:24px; position:relative; box-shadow:0 24px 60px rgba(0,0,0,.5); }
+    .geo-modal-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .geo-modal-hdr h3 { font-size:.95rem; font-weight:800; color:var(--white); }
+    .geo-close-btn { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:9px; border:1px solid rgba(255,255,255,.1); background:transparent; color:var(--muted); cursor:pointer; transition:all .15s; }
+    .geo-close-btn:hover { color:var(--white); border-color:rgba(255,255,255,.25); }
+    .geo-user-row { display:flex; align-items:center; gap:14px; padding:14px; background:rgba(255,255,255,.04); border-radius:12px; margin-bottom:14px; }
+    .geo-user-av { width:52px; height:52px; border-radius:50%; object-fit:cover; background:rgba(255,255,255,.08); flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .geo-user-av img { width:52px; height:52px; border-radius:50%; object-fit:cover; }
+    .geo-user-name { font-size:.9rem; font-weight:800; color:var(--white); }
+    .geo-user-uname { font-size:.75rem; color:var(--muted); margin-top:2px; }
+    .geo-user-id { font-size:.68rem; font-family:monospace; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:6px; padding:2px 8px; color:var(--muted); display:inline-block; margin-top:4px; }
+    .geo-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .geo-field { padding:10px 12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:10px; }
+    .geo-field-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:3px; }
+    .geo-field-value { font-size:.82rem; font-weight:600; color:var(--white); word-break:break-all; }
+    .geo-field-value.mono { font-family:monospace; font-size:.76rem; }
+    .geo-field.full { grid-column:1/-1; }
+
+    /* ── Auto Backup MongoDB ── */
+    .bkp-header-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between; }
+    .bkp-list { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+    .bkp-row { display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:14px; transition:border-color .15s; flex-wrap:wrap; }
+    .bkp-row:hover { border-color:rgba(6,182,212,.25); }
+    .bkp-status-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; background:rgba(255,255,255,.15); }
+    .bkp-status-dot.ok { background:var(--green); box-shadow:0 0 6px rgba(34,197,94,.6); }
+    .bkp-status-dot.fail { background:#ef4444; box-shadow:0 0 6px rgba(239,68,68,.6); }
+    .bkp-status-dot.off { background:rgba(255,255,255,.2); }
+    .bkp-info { flex:1; min-width:140px; }
+    .bkp-name { font-size:.87rem; font-weight:700; color:var(--white); display:flex; align-items:center; gap:7px; }
+    .bkp-uri  { font-size:.72rem; font-family:monospace; color:var(--muted); margin-top:2px; word-break:break-all; }
+    .bkp-meta { font-size:.7rem; color:var(--muted); margin-top:3px; display:flex; gap:10px; flex-wrap:wrap; }
+    .bkp-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:99px; font-size:.68rem; font-weight:700; }
+    .bkp-badge-cs  { background:rgba(6,182,212,.12); border:1px solid rgba(6,182,212,.3); color:var(--cyan-l); }
+    .bkp-badge-q   { background:rgba(124,58,237,.12); border:1px solid rgba(124,58,237,.3); color:var(--purple-l); }
+    .bkp-badge-s   { background:rgba(217,119,6,.1);   border:1px solid rgba(217,119,6,.3);  color:var(--gold-l); }
+    .bkp-badge-off { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:var(--muted); }
+    .bkp-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; flex-wrap:wrap; }
+    .bkp-icon-btn { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:9px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); color:var(--muted); cursor:pointer; transition:all .15s; }
+    .bkp-icon-btn:hover { background:rgba(124,58,237,.15); border-color:rgba(124,58,237,.35); color:var(--purple-l); }
+    .bkp-icon-btn.run:hover { background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.35); color:#86efac; }
+    .bkp-icon-btn.del:hover { background:rgba(220,38,38,.12); border-color:rgba(220,38,38,.35); color:#fca5a5; }
+    .bkp-icon-btn:disabled { opacity:.4; cursor:not-allowed; }
+    .bkp-empty { text-align:center; color:var(--muted); font-size:.83rem; padding:28px 0; }
+    /* Backup modal */
+    #bkp-modal-backdrop { position:fixed; inset:0; z-index:900; background:rgba(0,0,0,.7); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; visibility:hidden; transition:opacity .22s,visibility .22s; }
+    #bkp-modal-backdrop.open { opacity:1; visibility:visible; }
+    .bkp-modal { width:min(560px,100%); max-height:90vh; overflow-y:auto; background:rgba(8,2,24,.98); border:1px solid rgba(124,58,237,.28); border-radius:22px; padding:32px 28px 24px; box-shadow:0 28px 90px rgba(0,0,0,.8),0 0 0 1px rgba(124,58,237,.1); display:flex; flex-direction:column; gap:20px; scrollbar-width:thin; scrollbar-color:rgba(124,58,237,.25) transparent; }
+    .bkp-modal h3 { font-size:1.05rem; font-weight:800; color:var(--white); display:flex; align-items:center; gap:10px; letter-spacing:-.01em; margin-bottom:2px; }
+    .bkp-modal-sep { height:1px; background:rgba(255,255,255,.06); margin:0 -4px; }
+    .bkp-field { display:flex; flex-direction:column; gap:7px; }
+    .bkp-field label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:rgba(180,160,220,.7); display:flex; align-items:center; gap:5px; }
+    .bkp-field label i { opacity:.7; }
+    .bkp-input { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); border-radius:11px; color:var(--white); font-size:.865rem; padding:10px 13px; outline:none; font-family:inherit; transition:border-color .18s,background .18s; width:100%; }
+    .bkp-input:focus { border-color:rgba(124,58,237,.55); background:rgba(124,58,237,.04); }
+    .bkp-input::placeholder { color:var(--muted); }
+    .bkp-input[type="password"] { font-family:monospace; letter-spacing:.04em; }
+    .bkp-uri-row { display:flex; gap:6px; align-items:center; }
+    .bkp-uri-row .bkp-input { flex:1; }
+    .bkp-uri-reveal { background:none; border:none; cursor:pointer; color:var(--muted); padding:4px; display:flex; align-items:center; }
+    .bkp-uri-reveal:hover { color:var(--white); }
+    .bkp-mode-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .bkp-mode-opt { position:relative; cursor:pointer; }
+    .bkp-mode-opt input { position:absolute; opacity:0; width:0; height:0; }
+    .bkp-mode-card { border:1px solid rgba(255,255,255,.1); border-radius:13px; padding:14px 10px 12px; text-align:center; transition:all .18s; display:flex; flex-direction:column; gap:5px; align-items:center; background:rgba(255,255,255,.02); }
+    .bkp-mode-opt input:checked + .bkp-mode-card { border-color:rgba(124,58,237,.6); background:rgba(124,58,237,.1); box-shadow:0 0 0 1px rgba(124,58,237,.15) inset; }
+    .bkp-mode-card:hover { border-color:rgba(124,58,237,.4); background:rgba(124,58,237,.06); }
+    .bkp-mode-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:9px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); flex-shrink:0; margin-bottom:2px; }
+    .bkp-mode-icon svg, .bkp-mode-icon i { width:16px; height:16px; }
+    .bkp-mode-opt input:checked + .bkp-mode-card .bkp-mode-icon { background:rgba(124,58,237,.2); border-color:rgba(124,58,237,.4); }
+    .bkp-mode-title { font-size:.76rem; font-weight:700; color:var(--white); letter-spacing:.01em; }
+    .bkp-mode-desc { font-size:.64rem; color:var(--muted); line-height:1.45; }
+    .bkp-interval-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .bkp-interval-select { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); border-radius:11px; color:var(--white); font-size:.85rem; padding:10px 13px; outline:none; font-family:inherit; cursor:pointer; flex:1; min-width:140px; transition:border-color .18s; }
+    .bkp-interval-select:focus { border-color:rgba(124,58,237,.55); }
+    .bkp-interval-select option { background:#0a0022; }
+    .bkp-custom-row { display:flex; gap:6px; align-items:center; margin-top:6px; }
+    .bkp-webhooks-list { display:flex; flex-direction:column; gap:6px; }
+    .bkp-wh-item { display:flex; align-items:center; gap:6px; padding:8px 10px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:10px; }
+    .bkp-wh-url { flex:1; font-size:.72rem; font-family:monospace; color:var(--cyan-l); word-break:break-all; }
+    .bkp-wh-del { display:flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; border:none; background:rgba(220,38,38,.15); color:#fca5a5; cursor:pointer; flex-shrink:0; transition:background .15s; }
+    .bkp-wh-del:hover { background:rgba(220,38,38,.35); }
+    .bkp-add-wh-row { display:flex; gap:6px; }
+    .bkp-add-wh-row .bkp-input { flex:1; font-size:.78rem; font-family:monospace; }
+    .bkp-add-wh-btn { display:flex; align-items:center; gap:5px; padding:8px 12px; border-radius:10px; border:1px solid rgba(6,182,212,.3); background:rgba(6,182,212,.08); color:var(--cyan-l); font-size:.75rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }
+    .bkp-add-wh-btn:hover { background:rgba(6,182,212,.18); }
+    .bkp-test-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .bkp-test-btn { display:flex; align-items:center; gap:6px; padding:9px 15px; border-radius:11px; border:1px solid rgba(6,182,212,.3); background:rgba(6,182,212,.07); color:var(--cyan-l); font-size:.78rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; letter-spacing:.01em; }
+    .bkp-test-btn:hover { background:rgba(6,182,212,.18); border-color:rgba(6,182,212,.5); }
+    .bkp-test-btn:disabled { opacity:.4; cursor:not-allowed; }
+    .bkp-test-result { font-size:.75rem; padding:6px 11px; border-radius:9px; font-weight:500; }
+    .bkp-test-result.ok   { background:rgba(34,197,94,.08);  border:1px solid rgba(34,197,94,.25);  color:#86efac; }
+    .bkp-test-result.fail { background:rgba(220,38,38,.08);  border:1px solid rgba(220,38,38,.25);  color:#fca5a5; }
+    .bkp-modal-footer { display:flex; align-items:center; justify-content:flex-end; gap:8px; padding-top:12px; border-top:1px solid rgba(255,255,255,.06); margin-top:2px; }
+    .bkp-enable-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:12px; }
+    .bkp-enable-label { font-size:.86rem; font-weight:600; color:var(--white); display:flex; align-items:center; gap:7px; }
+    @media(max-width:480px) { .bkp-mode-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+
+  <!-- Profile sidebar backdrop -->
+  <div class="profile-backdrop" id="prof-backdrop"></div>
+
+  <!-- Profile sidebar -->
+  <aside class="profile-sidebar" id="prof-sidebar" aria-hidden="true">
+    <div class="prof-banner">
+      <% if (user.banner) { %>
+        <img src="https://cdn.discordapp.com/banners/<%= user.id %>/<%= user.banner %>.png?size=480" alt="" style="width:100%;height:100%;object-fit:cover;" />
+      <% } else if (user.bannerColor) { %>
+        <div class="prof-banner-solid" data-bg="<%= user.bannerColor %>"></div>
+      <% } %>
+      <div class="prof-banner-overlay"></div>
+      <button class="prof-close" id="close-profile" aria-label="Close">
+        <i data-lucide="x" style="width:14px;height:14px;stroke:currentColor;"></i>
+      </button>
+    </div>
+
+    <div class="prof-avatar-wrap">
+      <% if (user.avatar) { %>
+        <img class="prof-avatar" src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png?size=160" alt="<%= user.displayName || user.username %>" />
+      <% } else { %>
+        <div class="prof-avatar-fallback"><%= (user.displayName || user.username).charAt(0).toUpperCase() %></div>
+      <% } %>
+      <div class="prof-online-dot"></div>
+    </div>
+
+    <div class="prof-body">
+      <div class="prof-names">
+        <div class="prof-display-name"><%= user.displayName || user.username %></div>
+        <div class="prof-username">@<%= user.username %></div>
+      </div>
+      <div class="prof-block">
+        <div class="prof-block-label"><%= t.systemSettings.userID %></div>
+        <div class="prof-id-text" id="prof-copy-id" title="Click to copy"><%= user.id %></div>
+      </div>
+    </div>
+
+    <div class="prof-footer">
+      <a href="/settings" class="prof-btn" style="background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);color:var(--purple-l);">
+        <i data-lucide="settings-2" style="width:16px;height:16px;stroke:currentColor;"></i>
+        <%= t.systemSettings.systemSettings %>
+      </a>
+      <a href="https://discord.gg/BhJStSa89s" target="_blank" class="prof-btn help">
+        <i data-lucide="help-circle" style="width:16px;height:16px;stroke:currentColor;"></i>
+        <%= t.systemSettings.help %>
+      </a>
+      <a href="/auth/logout" class="prof-btn logout" id="logout-link">
+        <i data-lucide="log-out" style="width:16px;height:16px;stroke:currentColor;"></i>
+        <%= t.systemSettings.logout %>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="/dashboard" class="topbar-brand">
+      <img class="brand-logo" src="/img/ng.webp" alt="NEXT GENERATION" />
+      <span class="brand-text">NEXT GENERATION</span>
+    </a>
+    <div class="topbar-right">
+      <!-- Lang select — custom dropdown so flags render correctly on Windows -->
+      <select id="lang-select" style="display:none;" aria-hidden="true">
+        <option value="ar" <%= t.systemSettings.selectedAttr %>>ar</option>
+        <option value="en" <%= lang === 'en' ? 'selected' : '' %>>en</option>
+      </select>
+      <div class="lcs-wrap" id="lcs-wrap">
+        <button class="lcs-btn" id="lcs-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
+          <span class="lcs-flag" id="lcs-flag"><span class="fi fi-<%= t.flag %>"></span></span>
+          <span class="lcs-label" id="lcs-label"><%= t.systemSettings.english %></span>
+          <svg class="lcs-arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <ul class="lcs-menu" id="lcs-menu" role="listbox">
+          <li class="lcs-item<%= t.systemSettings.activeClass %>" role="option" data-value="ar" data-flag="sa" data-label="عربي" tabindex="0">
+            <span class="fi fi-sa"></span><span class="lcs-item-label">عربي</span>
+          </li>
+          <li class="lcs-item<%= lang === 'en' ? ' lcs-active' : '' %>" role="option" data-value="en" data-flag="us" data-label="English" tabindex="0">
+            <span class="fi fi-us"></span><span class="lcs-item-label">English</span>
+          </li>
+        </ul>
+      </div>
+      <!-- User chip -->
+      <button class="user-chip" id="open-profile" aria-label="Profile">
+        <div class="user-chip-avatar">
+          <% if (user.avatar) { %>
+            <img class="chip-av" src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png?size=64" alt="<%= user.displayName || user.username %>" />
+          <% } else { %>
+            <div class="user-chip-fallback">
+              <i data-lucide="user" style="width:13px;height:13px;stroke:var(--muted);"></i>
+            </div>
+          <% } %>
+        </div>
+        <span><%= user.displayName || user.username %></span>
+        <i data-lucide="chevron-right" style="width:13px;height:13px;stroke:var(--muted);margin-inline-start:2px;"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-wrap">
+    <div class="page-header">
+      <div class="badge-ship">
+        <i data-lucide="shield" style="width:12px;height:12px;stroke:currentColor;"></i>
+        SHIPS ACCESS
+      </div>
+      <h1><%= t.systemSettings.systemSettings %></h1>
+      <p><%= t.systemSettings.systemControlPanelRestrictedToAuthorized %></p>
+    </div>
+
+    <div class="content-grid">
+      <!-- Card 1: Dashboard Config -->
+      <div class="content-card config-card" id="config-card">
+        <div class="config-card-header">
+          <div class="content-card-icon">
+            <i data-lucide="layout-dashboard" style="width:22px;height:22px;stroke:currentColor;"></i>
+          </div>
+          <div>
+            <h3><%= t.systemSettings.dashboardConfig %></h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:2px;"><%= t.systemSettings.controlDashboardBehaviourVerificationAndIntro %></p>
+          </div>
+        </div>
+
+        <div class="config-divider"><%= t.systemSettings.general %></div>
+
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span><%= t.systemSettings.introPage %></span>
+            <small><%= t.systemSettings.showAnimatedIntroOnFirstVisit %></small>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-intro" <%= dashCfg.INTRO ? 'checked' : '' %>>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="config-divider"><%= t.systemSettings.verification %></div>
+
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span><%= t.systemSettings.codeVerificationOnLogin %></span>
+            <small><%= t.systemSettings.requireUsersToEnterACode %></small>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-code-access" <%= dashCfg.CODE_ACCESS ? 'checked' : '' %>>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="code-row<%= dashCfg.CODE_ACCESS ? '' : ' hidden' %>" id="code-row">
+          <label><%= t.systemSettings.accessCode %></label>
+          <div class="code-input-wrap">
+            <input class="code-input" type="password" id="code-input" value="<%= dashCfg.CODE %>" placeholder="<%= t.systemSettings.enterCode %>" autocomplete="off" />
+            <button class="code-toggle-vis" id="code-toggle-vis" type="button" aria-label="Show/hide code">
+              <i data-lucide="eye" style="width:16px;height:16px;stroke:currentColor;"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="save-btn primary" id="save-config-btn">
+            <i data-lucide="save" style="width:15px;height:15px;stroke:currentColor;"></i>
+            <%= t.systemSettings.save %>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 2: Servers Control -->
+      <div class="content-card config-card">
+        <div class="config-card-header">
+          <div class="content-card-icon">
+            <i data-lucide="server" style="width:22px;height:22px;stroke:currentColor;"></i>
+          </div>
+          <div>
+            <h3><%= t.systemSettings.serversControl %></h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:2px;"><%= t.systemSettings.controlWhichServersTheBotIs %></p>
+          </div>
+        </div>
+
+        <div class="config-divider"><%= t.systemSettings.joinPolicy %></div>
+
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span><%= t.systemSettings.allowAnyServer %></span>
+            <small><%= t.systemSettings.botCanJoinAnyServerWithout %></small>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-add-on-many" <%= serversCfg.ADD_BOT_ON_MANY_SERVER ? 'checked' : '' %>>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div id="restricted-section">
+          <div class="toggle-row leave-auto-row" id="leave-auto-row">
+            <div class="toggle-label">
+              <span><%= t.systemSettings.autoLeave %></span>
+              <small><%= t.systemSettings.botAutoLeavesServersNotIn %></small>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-leave-auto" <%= serversCfg.LEAVE_AUTO ? 'checked' : '' %>>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="code-row" style="margin-top:14px;">
+            <label><%= t.systemSettings.allowedServerIDs %></label>
+            <div class="tags-wrap" id="tags-wrap">
+              <% serversCfg.SERVER_ALLOWED.forEach(id => { %>
+                <span class="tag-item" data-id="<%= id %>"><%= id %><button type="button" class="tag-rm" data-remove="<%= id %>" aria-label="Remove">&#x2715;</button></span>
+              <% }) %>
+              <input class="tags-input" id="tags-input" placeholder="<%= t.systemSettings.typeOrPasteAnIDThen %>" />
+            </div>
+            <div class="tags-hint"><i data-lucide="zap" style="width:11px;height:11px;stroke:var(--gold-l);display:inline-block;vertical-align:middle;margin-inline-end:4px;"></i><%= t.systemSettings.pressEnterOrToAddAn %></div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="save-btn primary" id="save-servers-btn">
+            <i data-lucide="save" style="width:15px;height:15px;stroke:currentColor;"></i>
+            <%= t.systemSettings.save %>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 5: Webhook Log -->
+      <div class="content-card config-card">
+        <div class="config-card-header">
+          <div class="content-card-icon">
+            <i data-lucide="webhook" style="width:22px;height:22px;stroke:currentColor;"></i>
+          </div>
+          <div>
+            <h3><%= t.systemSettings.logWebhook %></h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:2px;"><%= t.systemSettings.automaticallySendActivityLogsToA %></p>
+          </div>
+        </div>
+
+        <div class="config-divider"><%= t.systemSettings.webhookURL %></div>
+
+        <div class="wh-url-wrap">
+          <span class="wh-status-dot<%= webhookCfg.URL ? ' active' : '' %>" id="wh-status-dot"></span>
+          <input class="wh-url-inp" type="text" id="wh-url-inp"
+            value="<%= webhookCfg.URL %>"
+            placeholder="https://discord.com/api/webhooks/..." />
+          <button class="wh-clear-btn" id="wh-clear-btn" title="<%= t.systemSettings.clearURL %>"<%= webhookCfg.URL ? '' : ' hidden' %>>
+            <i data-lucide="trash-2" style="width:14px;height:14px;stroke:currentColor;"></i>
+          </button>
+        </div>
+
+        <div class="config-divider"><%= t.systemSettings.embedColor %></div>
+
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <input type="color" class="wh-color-inp" id="wh-color-inp" value="<%= webhookCfg.COLOR %>" title="<%= t.systemSettings.pickAColor %>" />
+          <div class="color-swatch-row" id="wh-swatch-row">
+            <% [['#7c3aed','Purple'],['#06b6d4','Cyan'],['#22c55e','Green'],['#ef4444','Red'],['#f59e0b','Gold'],['#ec4899','Pink'],['#ffffff','White'],['#1e293b','Dark']].forEach(([c,n]) => { %>
+              <div class="color-swatch<%= webhookCfg.COLOR === c ? ' selected' : '' %>" data-color="<%= c %>" title="<%= n %>"></div>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="card-actions" style="gap:8px;">
+          <button class="wh-test-btn" id="wh-test-btn" <%= webhookCfg.URL ? '' : 'disabled' %>>
+            <i data-lucide="send" style="width:13px;height:13px;stroke:currentColor;"></i>
+            <%= t.systemSettings.sendTest %>
+          </button>
+          <button class="save-btn primary" id="save-wh-btn">
+            <i data-lucide="save" style="width:15px;height:15px;stroke:currentColor;"></i>
+            <%= t.systemSettings.save %>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card: Ships Management -->
+      <div class="content-card config-card">
+        <div class="config-card-header">
+          <div class="content-card-icon">
+            <i data-lucide="shield" style="width:22px;height:22px;stroke:currentColor;"></i>
+          </div>
+          <div>
+            <h3><%= t.systemSettings.shipsManagement %></h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:2px;"><%= t.systemSettings.addOrRemoveDiscordIDsThat %></p>
+          </div>
+        </div>
+        <div class="config-divider"><%= t.systemSettings.currentShips %></div>
+        <div class="ships-chips" id="ships-chips"></div>
+        <div class="config-divider"><%= t.systemSettings.addNewShip %></div>
+        <div class="ships-add-row">
+          <input class="ships-add-inp" type="text" id="ships-add-inp" placeholder="Discord User ID (e.g. 756947441592303707)" />
+          <button class="ships-add-btn" id="ships-add-btn">
+            <i data-lucide="plus" style="width:14px;height:14px;stroke:currentColor;"></i>
+            <%= t.systemSettings.add %>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card: Owners Management -->
+      <div class="content-card config-card">
+        <div class="config-card-header">
+          <div class="content-card-icon">
+            <i data-lucide="crown" style="width:22px;height:22px;stroke:currentColor;"></i>
+          </div>
+          <div>
+            <h3><%= t.systemSettings.ownersManagement %></h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:2px;"><%= t.systemSettings.addOrRemoveDiscordIDsListed %></p>
+          </div>
+        </div>
+        <div class="config-divider"><%= t.systemSettings.currentOwners %></div>
+        <div class="ships-chips" id="owners-chips"></div>
+        <div class="config-divider"><%= t.systemSettings.addNewOwner %></div>
+        <div class="ships-add-row">
+          <input class="ships-add-inp" type="text" id="owners-add-inp" placeholder="Discord User ID (e.g. 756947441592303707)" />
+          <button class="ships-add-btn" id="owners-add-btn">
+            <i data-lucide="plus" style="width:14px;height:14px;stroke:currentColor;"></i>
+            <%= t.systemSettings.add %>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card: Active Sessions -->
+      <div class="content-card config-card">
+        <div class="config-card-header sess-card-hdr">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="content-card-icon">
+              <i data-lucide="users" style="width:22px;height:22px;stroke:currentColor;"></i>
+            </div>
+            <div>
+              <h3><%= t.systemSettings.activeSessions %></h3>
+              <p style="font-size:.8rem;color:var(--muted);margin-top:2px;"><%= t.systemSettings.shipsCurrentlyConnectedToTheDashboard %></p>
+            </div>
+          </div>
+          <button class="save-btn" style="background:var(--surface);color:var(--muted);border:1px solid rgba(255,255,255,.1);" id="sess-refresh-btn">
+            <i data-lucide="refresh-cw" style="width:13px;height:13px;stroke:currentColor;"></i>
+            <%= t.systemSettings.refresh %>
+          </button>
+        </div>
+        <div class="sess-list" id="sess-list"></div>
+      </div>
+
+      <!-- Card: Auto Backup MongoDB -->
+      <div class="content-card config-card" id="bkp-card">
+        <div class="bkp-header-row">
+          <div class="config-card-header" style="margin-bottom:0;flex:1;">
+            <div class="content-card-icon" style="background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.25);">
+              <i data-lucide="database-backup" style="width:22px;height:22px;stroke:var(--cyan-l);stroke-width:2;"></i>
+            </div>
+            <div>
+              <h3><%= t.systemSettings.autoBackup %></h3>
+              <p style="font-size:.8rem;color:var(--muted);margin-top:2px;"><%= t.systemSettings.autoBackupDesc %></p>
+            </div>
+          </div>
+          <button class="save-btn primary" id="bkp-add-btn" style="flex-shrink:0;">
+            <i data-lucide="plus" style="width:14px;height:14px;stroke:currentColor;"></i>
+            <%= t.systemSettings.autoBackupAdd %>
+          </button>
+        </div>
+
+        <div class="config-divider"><%= t.systemSettings.autoBackupTargets %></div>
+
+        <div id="bkp-loading" style="text-align:center;color:var(--muted);font-size:.8rem;padding:18px 0;">
+          <i data-lucide="loader-2" style="width:14px;height:14px;stroke:currentColor;animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;margin-inline-end:6px;"></i>
+          <%= t.systemSettings.autoBackupLoading %>
+        </div>
+        <div id="bkp-empty" class="bkp-empty" style="display:none;"><%= t.systemSettings.autoBackupEmpty %></div>
+        <div id="bkp-list" class="bkp-list"></div>
+      </div>
+
+      <!-- Card: Logs & Activity -->
+
+      <div class="content-card config-card" id="logs-card">
+        <div class="config-card-header">
+          <div class="content-card-icon">
+            <i data-lucide="activity" style="width:22px;height:22px;stroke:currentColor;"></i>
+          </div>
+          <div>
+            <h3><%= t.systemSettings.logsActivity %></h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:2px;"><%= t.systemSettings.dashboardLoginsBotServerAdditionsAnd %></p>
+          </div>
+        </div>
+
+        <!-- Clear-request banner -->
+        <div class="clear-request-banner" id="crb">
+          <div class="crb-title">
+            <i data-lucide="alert-triangle" style="width:14px;height:14px;stroke:currentColor;"></i>
+            <span id="crb-title-text"></span>
+          </div>
+          <div class="crb-body" id="crb-body"></div>
+          <div class="crb-votes" id="crb-votes"></div>
+          <div class="crb-actions" id="crb-actions"></div>
+        </div>
+
+        <div class="log-toolbar">
+          <div class="log-filter-group">
+            <button class="log-filter-btn active" data-type="all"><%= t.systemSettings.all %></button>
+            <button class="log-filter-btn" data-type="login"><i data-lucide="log-in" style="width:12px;height:12px;stroke:currentColor;"></i> <%= t.systemSettings.login %></button>
+            <button class="log-filter-btn" data-type="guild_join"><i data-lucide="plus-circle" style="width:12px;height:12px;stroke:currentColor;"></i> <%= t.systemSettings.botAdded %></button>
+            <button class="log-filter-btn" data-type="guild_leave"><i data-lucide="log-out" style="width:12px;height:12px;stroke:currentColor;"></i> <%= t.systemSettings.leave %></button>
+          </div>
+          <button class="log-clear-btn" id="log-clear-btn" title="<%= t.systemSettings.requestLogClear %>">
+            <i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;"></i>
+            <%= t.systemSettings.clearLogs %>
+          </button>
+        </div>
+
+        <div class="log-list" id="log-list" data-empty="<%= t.systemSettings.noLogsYet %>"></div>
+
+        <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:.72rem;color:var(--muted);" id="log-count-label"></span>
+          <button class="save-btn" style="background:var(--surface);color:var(--muted);border:1px solid rgba(255,255,255,.1);" id="log-refresh-btn">
+            <i data-lucide="refresh-cw" style="width:13px;height:13px;stroke:currentColor;"></i>
+            <%= t.systemSettings.refresh %>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back to dashboard -->
+    <div class="page-footer">
+      <a href="/dashboard" class="back-btn">
+        <i data-lucide="arrow-left" style="width:16px;height:16px;stroke:currentColor;"></i>
+        <%= t.systemSettings.backToDashboard %>
+      </a>
+    </div>
+  </div>
+
+  <!-- Geo Info Modal -->
+  <div class="geo-modal-backdrop" id="geo-modal-backdrop">
+    <div class="geo-modal">
+      <div class="geo-modal-hdr">
+        <h3><%= t.systemSettings.userAmpLocationInfo %></h3>
+        <button class="geo-close-btn" id="geo-close-btn"><i data-lucide="x" style="width:15px;height:15px;stroke:currentColor;"></i></button>
+      </div>
+      <div class="geo-user-row">
+        <div class="geo-user-av" id="geo-av"><i data-lucide="user" style="width:22px;height:22px;stroke:currentColor;"></i></div>
+        <div>
+          <div class="geo-user-name" id="geo-name">—</div>
+          <div class="geo-user-uname" id="geo-uname">—</div>
+          <div class="geo-user-id" id="geo-uid">—</div>
+        </div>
+      </div>
+      <div class="geo-fields" id="geo-fields">
+        <div class="geo-field full" style="text-align:center;color:var(--muted);font-size:.8rem;">
+          <i data-lucide="loader-2" style="width:16px;height:16px;stroke:currentColor;animation:spin 1s linear infinite;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Auto Backup MongoDB — Add / Edit Modal ═══ -->
+  <div id="bkp-modal-backdrop">
+    <div class="bkp-modal">
+      <h3>
+        <i data-lucide="database-backup" style="width:20px;height:20px;stroke:var(--cyan-l);stroke-width:2;flex-shrink:0;"></i>
+        <span id="bkp-modal-title"><%= t.systemSettings.autoBackupAddTitle %></span>
+      </h3>
+
+      <!-- Name -->
+      <div class="bkp-field">
+        <label><i data-lucide="tag" style="width:11px;height:11px;stroke:currentColor;"></i> <%= t.systemSettings.autoBackupName %></label>
+        <input class="bkp-input" type="text" id="bkp-name-inp" maxlength="80" placeholder="e.g. Primary Replica" />
+      </div>
+
+      <!-- URI -->
+      <div class="bkp-field">
+        <label><i data-lucide="link" style="width:11px;height:11px;stroke:currentColor;"></i> <%= t.systemSettings.autoBackupUri %></label>
+        <div class="bkp-uri-row">
+          <input class="bkp-input" type="password" id="bkp-uri-inp" placeholder="mongodb+srv://user:pass@host/db" autocomplete="off" />
+          <button type="button" class="bkp-uri-reveal" id="bkp-uri-reveal" title="Show/hide">
+            <i data-lucide="eye" style="width:16px;height:16px;stroke:currentColor;"></i>
+          </button>
+        </div>
+        <small style="font-size:.7rem;color:var(--muted);">Leave blank to keep existing URI when editing.</small>
+      </div>
+
+      <!-- Mode selector -->
+      <div class="bkp-field">
+        <label><i data-lucide="cpu" style="width:11px;height:11px;stroke:currentColor;"></i> <%= t.systemSettings.autoBackupMode %></label>
+        <div class="bkp-mode-grid">
+          <label class="bkp-mode-opt">
+            <input type="radio" name="bkp-mode" value="changestream" checked />
+            <div class="bkp-mode-card">
+              <div class="bkp-mode-icon"><i data-lucide="zap" style="width:16px;height:16px;stroke:var(--cyan-l);stroke-width:2;"></i></div>
+              <div class="bkp-mode-title"><%= t.systemSettings.autoBackupModeCS %></div>
+              <div class="bkp-mode-desc"><%= t.systemSettings.autoBackupModeCSDesc %></div>
+            </div>
+          </label>
+          <label class="bkp-mode-opt">
+            <input type="radio" name="bkp-mode" value="queue" />
+            <div class="bkp-mode-card">
+              <div class="bkp-mode-icon"><i data-lucide="layers" style="width:16px;height:16px;stroke:rgba(167,139,250,1);stroke-width:2;"></i></div>
+              <div class="bkp-mode-title"><%= t.systemSettings.autoBackupModeQ %></div>
+              <div class="bkp-mode-desc"><%= t.systemSettings.autoBackupModeQDesc %></div>
+            </div>
+          </label>
+          <label class="bkp-mode-opt">
+            <input type="radio" name="bkp-mode" value="schedule" />
+            <div class="bkp-mode-card">
+              <div class="bkp-mode-icon"><i data-lucide="clock" style="width:16px;height:16px;stroke:rgba(251,191,36,1);stroke-width:2;"></i></div>
+              <div class="bkp-mode-title"><%= t.systemSettings.autoBackupModeSched %></div>
+              <div class="bkp-mode-desc"><%= t.systemSettings.autoBackupModeSchedDesc %></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Schedule interval (only shown when mode=schedule) -->
+      <div class="bkp-field" id="bkp-interval-field" style="display:none;">
+        <label><i data-lucide="timer" style="width:11px;height:11px;stroke:currentColor;"></i> <%= t.systemSettings.autoBackupInterval %></label>
+        <select class="bkp-interval-select" id="bkp-interval-preset">
+          <option value="60000">1 <%= t.systemSettings.autoBackupMin %></option>
+          <option value="300000">5 <%= t.systemSettings.autoBackupMin %></option>
+          <option value="900000">15 <%= t.systemSettings.autoBackupMin %></option>
+          <option value="1800000">30 <%= t.systemSettings.autoBackupMin %></option>
+          <option value="3600000" selected>1 <%= t.systemSettings.autoBackupHour %></option>
+          <option value="21600000">6 <%= t.systemSettings.autoBackupHours %></option>
+          <option value="43200000">12 <%= t.systemSettings.autoBackupHours %></option>
+          <option value="86400000">1 <%= t.systemSettings.autoBackupDay %></option>
+          <option value="604800000">7 <%= t.systemSettings.autoBackupDays %></option>
+          <option value="2592000000">30 <%= t.systemSettings.autoBackupDays %> (1 <%= t.systemSettings.autoBackupMonth %>)</option>
+          <option value="custom"><%= t.systemSettings.autoBackupCustom %>…</option>
+        </select>
+        <div class="bkp-custom-row" id="bkp-custom-row" style="display:none;">
+          <input class="bkp-input" type="number" id="bkp-custom-min" min="1" max="43200" placeholder="minutes" style="max-width:110px;" />
+          <span style="font-size:.8rem;color:var(--muted);"><%= t.systemSettings.autoBackupMinutes %></span>
+        </div>
+      </div>
+
+      <!-- Discord Webhook Notifications -->
+      <div class="bkp-field">
+        <label><i data-lucide="bell" style="width:11px;height:11px;stroke:currentColor;"></i> <%= t.systemSettings.autoBackupWebhooks %></label>
+        <div id="bkp-wh-list" class="bkp-webhooks-list"></div>
+        <div class="bkp-add-wh-row" style="margin-top:6px;">
+          <input class="bkp-input" type="text" id="bkp-wh-inp" placeholder="https://discord.com/api/webhooks/..." />
+          <button type="button" class="bkp-add-wh-btn" id="bkp-wh-add-btn">
+            <i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;"></i>
+            <%= t.systemSettings.autoBackupWebhookAdd %>
+          </button>
+        </div>
+        <small style="font-size:.7rem;color:var(--muted);margin-top:4px;display:block;"><%= t.systemSettings.autoBackupWebhookHint %></small>
+      </div>
+
+      <!-- Test connection -->
+      <div class="bkp-test-row">
+        <button type="button" class="bkp-test-btn" id="bkp-test-btn">
+          <i data-lucide="cable" style="width:13px;height:13px;stroke:currentColor;"></i>
+          <%= t.systemSettings.autoBackupTest %>
+        </button>
+        <span id="bkp-test-result" class="bkp-test-result" style="display:none;"></span>
+      </div>
+
+      <!-- Enable toggle -->
+      <div class="bkp-enable-row">
+        <span class="bkp-enable-label"><i data-lucide="power" style="width:14px;height:14px;stroke:var(--cyan-l);"></i> <%= t.systemSettings.autoBackupEnabled %></span>
+        <label class="switch">
+          <input type="checkbox" id="bkp-enabled-toggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Footer -->
+      <div class="bkp-modal-footer">
+        <button type="button" class="save-btn" style="background:var(--surface);color:var(--muted);border:1px solid rgba(255,255,255,.1);" id="bkp-modal-cancel"><%= t.systemSettings.cancel %></button>
+        <button type="button" class="save-btn primary" id="bkp-modal-save">
+          <i data-lucide="save" style="width:14px;height:14px;stroke:currentColor;"></i>
+          <span id="bkp-modal-save-text"><%= t.systemSettings.save %></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bot Guilds Section -->
+
+  <div class="page-wrap page-wrap-guilds">
+    <div class="guilds-section">
+      <div class="guilds-section-header">
+        <div class="content-card-icon" style="width:36px;height:36px;border-radius:10px;">
+          <i data-lucide="server" style="width:18px;height:18px;stroke:currentColor;"></i>
+        </div>
+        <h2><%= t.systemSettings.currentBotServers %></h2>
+        <span class="guilds-count" id="guilds-count">...</span>
+      </div>
+      <div class="guild-list" id="guild-list">
+        <div class="guilds-loading">
+          <i data-lucide="loader-2" style="width:18px;height:18px;stroke:currentColor;animation:spin 1s linear infinite;"></i>
+          <%= t.systemSettings.loadingServers %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Owners confirm modal -->
+  <div id="owners-confirm-modal">
+    <div class="ships-modal-card">
+      <div class="ships-modal-banner" id="owners-modal-banner"></div>
+      <div class="ships-modal-body">
+        <div class="ships-modal-dname" id="owners-modal-dname"></div>
+        <div class="ships-modal-uname" id="owners-modal-uname"></div>
+        <div class="ships-modal-uid" id="owners-modal-uid"></div>
+        <div class="ships-modal-question"><%= t.systemSettings.addThisUserToOwners %></div>
+      </div>
+      <div class="ships-modal-footer">
+        <button class="ships-modal-cancel" id="owners-modal-cancel"><%= t.systemSettings.cancel %></button>
+        <button class="ships-modal-confirm" id="owners-modal-confirm"><%= t.systemSettings.confirm %></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ships confirm modal -->
+  <div id="ships-confirm-modal">
+    <div class="ships-modal-card">
+      <div class="ships-modal-banner" id="ships-modal-banner"></div>
+      <div class="ships-modal-body">
+        <div class="ships-modal-dname" id="ships-modal-dname"></div>
+        <div class="ships-modal-uname" id="ships-modal-uname"></div>
+        <div class="ships-modal-uid" id="ships-modal-uid"></div>
+        <div class="ships-modal-question"><%= t.systemSettings.addThisUserToShipsAccess %></div>
+      </div>
+      <div class="ships-modal-footer">
+        <button class="ships-modal-cancel" id="ships-modal-cancel"><%= t.systemSettings.cancel %></button>
+        <button class="ships-modal-confirm" id="ships-modal-confirm"><%= t.systemSettings.confirm %></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leave confirmation modal -->
+  <div class="modal-backdrop" id="leave-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div id="modal-guild-icon-wrap"></div>
+        <div>
+          <div class="modal-title" id="modal-guild-name"></div>
+          <div class="modal-sub"><%= t.systemSettings.confirmLeavingThisServer %></div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <p><%= t.systemSettings.chooseWhatHappensAfterTheBot %></p>
+        <div class="modal-options">
+          <label class="modal-option selected" id="opt-keep">
+            <input class="modal-radio" type="radio" name="leave-mode" value="keep" checked />
+            <div class="modal-opt-icon purple">
+              <i data-lucide="database" style="width:16px;height:16px;stroke:currentColor;"></i>
+            </div>
+            <div class="modal-opt-text">
+              <strong><%= t.systemSettings.leaveOnly %></strong>
+              <small><%= t.systemSettings.botLeavesButAllServerData %></small>
+            </div>
+          </label>
+          <label class="modal-option danger" id="opt-delete">
+            <input class="modal-radio" type="radio" name="leave-mode" value="delete" />
+            <div class="modal-opt-icon red">
+              <i data-lucide="trash-2" style="width:16px;height:16px;stroke:currentColor;"></i>
+            </div>
+            <div class="modal-opt-text">
+              <strong><%= t.systemSettings.leaveDeleteData %></strong>
+              <small><%= t.systemSettings.botLeavesAndAllServerData %></small>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="modal-cancel"><%= t.systemSettings.cancel %></button>
+        <button class="btn-confirm-leave" id="modal-confirm">
+          <i data-lucide="log-out" style="width:14px;height:14px;stroke:currentColor;"></i>
+          <%= t.systemSettings.confirmLeave %>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="sys-toast" id="sys-toast"></div>
+
+  <!-- Lucide -->
+  <script src="/js/lucide.min.js"></script>
+  <%- include('partials/bg_stars_system') %>
+  <script type="application/json" id="ships-server-data"><%- JSON.stringify(shipsCfg.SHIPS || []) %></script>
+  <script type="application/json" id="owners-server-data"><%- JSON.stringify(ownersCfg.OWNERS || []) %></script>
+  <script type="application/json" id="sys-t-data"><%- JSON.stringify(t.systemSettings) %></script>
+  <script>
+
+    /* ── Lucide ── */
+    lucide.createIcons();
+
+    /* ── Dashboard config ── */
+    const toggleCodeAccess = document.getElementById('toggle-code-access');
+    const codeRow = document.getElementById('code-row');
+    toggleCodeAccess.addEventListener('change', () => {
+      codeRow.classList.toggle('hidden', !toggleCodeAccess.checked);
+    });
+
+    const codeInput = document.getElementById('code-input');
+    const codeToggleVis = document.getElementById('code-toggle-vis');
+    codeToggleVis.addEventListener('click', () => {
+      const isPass = codeInput.type === 'password';
+      codeInput.type = isPass ? 'text' : 'password';
+      const iconEl = codeToggleVis.querySelector('i[data-lucide]');
+      iconEl.setAttribute('data-lucide', isPass ? 'eye-off' : 'eye');
+      lucide.createIcons();
+    });
+
+    function showSysToast(msg, type) {
+      const el = document.getElementById('sys-toast');
+      el.className = 'sys-toast ' + (type || 'success');
+      el.innerHTML = '<i data-lucide="' + (type === 'error' ? 'x-circle' : 'check-circle') + '" style="width:16px;height:16px;stroke:currentColor;"></i> ' + msg;
+      lucide.createIcons();
+      el.classList.add('show');
+      clearTimeout(el._to);
+      el._to = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    document.getElementById('save-config-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('save-config-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" style="width:15px;height:15px;stroke:currentColor;animation:spin 1s linear infinite;"></i> <%= t.systemSettings.saving %>';
+      lucide.createIcons();
+      try {
+        const r = await fetch('/settings/dashboard-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            INTRO:       document.getElementById('toggle-intro').checked,
+            CODE_ACCESS: toggleCodeAccess.checked,
+            CODE:        codeInput.value.trim(),
+          }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Failed');
+        showSysToast('<%= t.systemSettings.savedSuccessfully %>', 'success');
+      } catch (e) {
+        showSysToast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="save" style="width:15px;height:15px;stroke:currentColor;"></i> <%= t.systemSettings.save %>';
+        lucide.createIcons();
+      }
+    });
+
+    /* ── Servers config ── */
+    const toggleAddOnMany   = document.getElementById('toggle-add-on-many');
+    const leaveAutoRow      = document.getElementById('leave-auto-row');
+    const restrictedSection = document.getElementById('restricted-section');
+
+    function syncServersUI() {
+      const many = toggleAddOnMany.checked;
+      leaveAutoRow.classList.toggle('dimmed', many);
+      if (many) document.getElementById('toggle-leave-auto').checked = false;
+    }
+    toggleAddOnMany.addEventListener('change', syncServersUI);
+    syncServersUI();
+
+    // Tag input for SERVER_ALLOWED
+    const tagsWrap = document.getElementById('tags-wrap');
+    const tagsInput = document.getElementById('tags-input');
+    function getAllowedIds() {
+      return [...tagsWrap.querySelectorAll('.tag-item')].map(t => t.dataset.id);
+    }
+    function addTag(id) {
+      id = id.trim().replace(/[^0-9]/g, '');
+      if (!id || id.length < 15) return;   // Discord snowflakes: 15-19 digits
+      if (tagsWrap.querySelector(`[data-id="${id}"]`)) return;
+      const span = document.createElement('span');
+      span.className = 'tag-item';
+      span.dataset.id = id;
+      span.innerHTML = `${id}<button type="button" class="tag-rm" data-remove="${id}" aria-label="Remove">&#x2715;</button>`;
+      span.querySelector('.tag-rm').addEventListener('click', () => span.remove());
+      tagsWrap.insertBefore(span, tagsInput);
+      tagsInput.value = '';
+    }
+    tagsInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagsInput.value); }
+      if (e.key === 'Backspace' && !tagsInput.value) { const last = tagsWrap.querySelector('.tag-item:last-of-type'); if (last) last.remove(); }
+    });
+    tagsInput.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      text.split(/[,\s\n]+/).forEach(id => addTag(id));
+    });
+    tagsWrap.addEventListener('click', e => {
+      const btn = e.target.closest('[data-remove]');
+      if (btn) { btn.closest('.tag-item').remove(); }
+      else { tagsInput.focus(); }
+    });
+
+    document.getElementById('save-servers-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('save-servers-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" style="width:15px;height:15px;stroke:currentColor;animation:spin 1s linear infinite;"></i> <%= t.systemSettings.saving %>';
+      lucide.createIcons();
+      try {
+        const r = await fetch('/settings/dashboard-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            INTRO:                 document.getElementById('toggle-intro').checked,
+            CODE_ACCESS:           document.getElementById('toggle-code-access').checked,
+            CODE:                  document.getElementById('code-input').value.trim(),
+            ADD_BOT_ON_MANY_SERVER: toggleAddOnMany.checked,
+            LEAVE_AUTO:            document.getElementById('toggle-leave-auto').checked,
+            SERVER_ALLOWED:        getAllowedIds(),
+          }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Failed');
+        if (data.serversCfg) {
+          document.getElementById('toggle-leave-auto').checked = data.serversCfg.LEAVE_AUTO;
+          syncServersUI();
+        }
+        showSysToast('<%= t.systemSettings.savedSuccessfully %>', 'success');
+      } catch (e) {
+        showSysToast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="save" style="width:15px;height:15px;stroke:currentColor;"></i> <%= t.systemSettings.save %>';
+        lucide.createIcons();
+      }
+    });
+
+    /* ── Guild list ── */
+    let leaveTargetGuild = null;
+
+    function renderGuildRow(g) {
+      const iconHtml = g.icon
+        ? `<img class="guild-row-icon" src="${g.icon}" alt="${g.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="guild-row-icon-fallback" style="display:none">${g.name.charAt(0).toUpperCase()}</div>`
+        : `<div class="guild-row-icon-fallback">${g.name.charAt(0).toUpperCase()}</div>`;
+      const allowedBadge = g.inAllowed ? ' <span class="badge-allowed"><%= t.systemSettings.allowed %></span>' : '';
+      const div = document.createElement('div');
+      div.className = 'guild-row';
+      div.dataset.id = g.id;
+      div.innerHTML = `
+        ${iconHtml}
+        <div class="guild-row-info">
+          <div class="guild-row-name">${g.name}${allowedBadge}</div>
+          <div class="guild-row-meta">
+            <span><i data-lucide="users" style="width:11px;height:11px;stroke:currentColor;"></i> ${g.memberCount.toLocaleString()}</span>
+            <span><i data-lucide="crown" style="width:11px;height:11px;stroke:currentColor;"></i> ${g.ownerTag}</span>
+            <span style="font-family:monospace;font-size:.7rem;">${g.id}</span>
+          </div>
+        </div>
+        <div class="guild-row-actions">
+          <button class="btn-leave" data-guild-id="${g.id}">
+            <i data-lucide="log-out" style="width:13px;height:13px;stroke:currentColor;"></i>
+            <%= t.systemSettings.leave %>
+          </button>
+        </div>`;
+      div.querySelector('.btn-leave').addEventListener('click', () => openLeaveModal(g));
+      return div;
+    }
+
+    async function loadGuilds() {
+      const list = document.getElementById('guild-list');
+      const countEl = document.getElementById('guilds-count');
+      try {
+        const r = await fetch('/settings/bot-guilds');
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Failed');
+        list.innerHTML = '';
+        countEl.textContent = data.guilds.length;
+        if (data.guilds.length === 0) {
+          list.innerHTML = '<div class="guilds-empty"><%= t.systemSettings.botIsNotInAnyServer %></div>';
+          return;
+        }
+        data.guilds.forEach(g => list.appendChild(renderGuildRow(g)));
+        lucide.createIcons();
+      } catch (e) {
+        list.innerHTML = `<div class="guilds-empty" style="color:#fca5a5">${e.message}</div>`;
+      }
+    }
+    loadGuilds();
+
+    /* ── Leave modal ── */
+    const leaveModal = document.getElementById('leave-modal');
+
+    function openLeaveModal(g) {
+      leaveTargetGuild = g;
+      document.getElementById('modal-guild-name').textContent = g.name;
+      const iconWrap = document.getElementById('modal-guild-icon-wrap');
+      iconWrap.innerHTML = g.icon
+        ? `<img class="modal-guild-icon" src="${g.icon}" alt="${g.name}" />`
+        : `<div class="modal-guild-icon-fallback">${g.name.charAt(0).toUpperCase()}</div>`;
+      // reset selection
+      document.querySelector('input[name="leave-mode"][value="keep"]').checked = true;
+      document.getElementById('opt-keep').classList.add('selected');
+      document.getElementById('opt-delete').classList.remove('selected');
+      leaveModal.classList.add('open');
+    }
+    function closeLeaveModal() { leaveModal.classList.remove('open'); leaveTargetGuild = null; }
+
+    document.getElementById('modal-cancel').addEventListener('click', closeLeaveModal);
+    leaveModal.addEventListener('click', e => { if (e.target === leaveModal) closeLeaveModal(); });
+
+    document.querySelectorAll('.modal-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.modal-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        opt.querySelector('input[type="radio"]').checked = true;
+      });
+    });
+
+    document.getElementById('modal-confirm').addEventListener('click', async () => {
+      if (!leaveTargetGuild) return;
+      const btn = document.getElementById('modal-confirm');
+      const deleteData = document.querySelector('input[name="leave-mode"]:checked').value === 'delete';
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" style="width:14px;height:14px;stroke:currentColor;animation:spin 1s linear infinite;"></i> <%= t.systemSettings.leaving %>';
+      lucide.createIcons();
+      try {
+        const r = await fetch('/settings/guild-leave', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ guildId: leaveTargetGuild.id, deleteData }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Failed');
+        // Remove the row
+        document.querySelector(`.guild-row[data-id="${leaveTargetGuild.id}"]`)?.remove();
+        const remaining = document.querySelectorAll('.guild-row').length;
+        document.getElementById('guilds-count').textContent = remaining;
+        closeLeaveModal();
+        showSysToast(
+          '<%= t.systemSettings.botLeftTheServer %>' + (deleteData ? ' <%= t.systemSettings.andDataDeleted %>' : ''),
+          'success'
+        );
+      } catch (e) {
+        showSysToast(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="log-out" style="width:14px;height:14px;stroke:currentColor;"></i> <%= t.systemSettings.confirmLeave %>';
+        lucide.createIcons();
+      }
+    });
+
+    /* ── Webhook card JS ── */
+    const _whColorSwatches = [
+      '#7c3aed','#06b6d4','#22c55e','#ef4444','#f59e0b','#ec4899','#ffffff','#1e293b'
+    ];
+    const whUrlInp   = document.getElementById('wh-url-inp');
+    const whColorInp = document.getElementById('wh-color-inp');
+    const whDot      = document.getElementById('wh-status-dot');
+    const whTestBtn  = document.getElementById('wh-test-btn');
+
+    // Sync status dot + test btn with URL field
+    whUrlInp.addEventListener('input', () => {
+      const hasUrl = !!whUrlInp.value.trim();
+      whDot.classList.toggle('active', hasUrl);
+      whTestBtn.disabled = !hasUrl;
+      const clearBtn = document.getElementById('wh-clear-btn');
+      if (clearBtn) { if (hasUrl) clearBtn.removeAttribute('hidden'); else clearBtn.setAttribute('hidden',''); }
+    });
+
+    // Clear webhook URL button
+    const whClearBtn = document.getElementById('wh-clear-btn');
+    if (whClearBtn) {
+      whClearBtn.addEventListener('click', () => {
+        whUrlInp.value = '';
+        whUrlInp.dispatchEvent(new Event('input'));
+        whUrlInp.focus();
+      });
+    }
+
+    // Swatches — init background from data-color
+    document.querySelectorAll('#wh-swatch-row .color-swatch').forEach(sw => {
+      sw.style.background = sw.dataset.color;
+      sw.addEventListener('click', () => {
+        document.querySelectorAll('#wh-swatch-row .color-swatch').forEach(s => s.classList.remove('selected'));
+        sw.classList.add('selected');
+        whColorInp.value = sw.dataset.color;
+      });
+    });
+    whColorInp.addEventListener('input', () => {
+      document.querySelectorAll('#wh-swatch-row .color-swatch').forEach(s => {
+        s.classList.toggle('selected', s.dataset.color.toLowerCase() === whColorInp.value.toLowerCase());
+      });
+    });
+
+    async function _saveWebhook(test) {
+      const btn = test ? whTestBtn : document.getElementById('save-wh-btn');
+      btn.disabled = true;
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = '<i data-lucide="loader-2" style="width:13px;height:13px;stroke:currentColor;animation:spin 1s linear infinite;"></i>';
+      lucide.createIcons();
+      try {
+        const r = await fetch('/settings/webhook-config', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ URL: whUrlInp.value.trim(), COLOR: whColorInp.value, test: !!test }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Failed');
+        showSysToast(
+          test
+            ? ('<%= t.systemSettings.testMessageSent %>')
+            : ('<%= t.systemSettings.webhookSaved %>'),
+          'success'
+        );
+      } catch (e) { showSysToast(e.message, 'error'); }
+      finally { btn.disabled = !whUrlInp.value.trim() && test; btn.innerHTML = origHtml; lucide.createIcons(); }
+    }
+
+    document.getElementById('save-wh-btn').addEventListener('click', () => _saveWebhook(false));
+    whTestBtn.addEventListener('click',                                   () => _saveWebhook(true));
+
+    /* ── Logs card ── */
+    const _logLang = '<%= lang %>';
+    const _sys_t = JSON.parse(document.getElementById('sys-t-data').textContent);
+    function _tf(tpl, vars) { return tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? ''); }
+    let _logData = { entries: [], clearRequest: null, ships: [] };
+    let _logFilter = 'all';
+    const _meId = '<%= user.id %>';
+
+    function _timeAgo(iso) {
+      const diff = Date.now() - new Date(iso).getTime();
+      const s = Math.floor(diff / 1000);
+      if (s < 60)  return _tf(_sys_t.agoSeconds, {n: s});
+      const m = Math.floor(s / 60);
+      if (m < 60)  return _tf(_sys_t.agoMinutes, {n: m});
+      const h = Math.floor(m / 60);
+      if (h < 24)  return _tf(_sys_t.agoHours, {n: h});
+      const d = Math.floor(h / 24);
+      return _tf(_sys_t.agoDays, {n: d});
+    }
+
+    function _renderLogEntry(e) {
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      let iconHtml = '', title = '', sub = '';
+      if (e.type === 'login') {
+        const av = e.avatar
+          ? `<img src="https://cdn.discordapp.com/avatars/${e.userId}/${e.avatar}.png?size=40" alt="" onerror="this.parentElement.className='log-entry-icon log-icon-login';this.remove();" />`
+          : `<i data-lucide="user" style="width:16px;height:16px;stroke:currentColor;"></i>`;
+        iconHtml  = `<div class="log-entry-icon log-icon-login">${av}</div>`;
+        const _name = e.displayName || e.username || e.userId;
+        title     = `<span class="log-entry-title-name">${_name}</span><span class="log-entry-title-id">${e.userId || ''}</span>`;
+        sub       = _sys_t.loggedInToDashboard;
+      } else if (e.type === 'guild_join') {
+        const gIco = e.guildIcon
+          ? `<img src="${e.guildIcon}" alt="" onerror="this.parentElement.className='log-entry-icon log-icon-join';this.remove();" />`
+          : `<i data-lucide="server" style="width:16px;height:16px;stroke:currentColor;"></i>`;
+        iconHtml  = `<div class="log-entry-icon log-icon-join">${gIco}</div>`;
+        title     = `<span class="log-entry-title-name">${e.guildName || e.guildId}</span><span class="log-entry-title-id">${e.guildId || ''}</span>`;
+        sub       = _sys_t.botWasAdded;
+      } else if (e.type === 'guild_leave') {
+        const glIco = e.guildIcon
+          ? `<img src="${e.guildIcon}" alt="" onerror="this.parentElement.className='log-entry-icon log-icon-leave';this.remove();" />`
+          : `<i data-lucide="log-out" style="width:16px;height:16px;stroke:currentColor;"></i>`;
+        iconHtml  = `<div class="log-entry-icon log-icon-leave">${glIco}</div>`;
+        title     = `<span class="log-entry-title-name">${e.guildName || e.guildId}</span><span class="log-entry-title-id">${e.guildId || ''}</span>`;
+        const who  = e.byUsername ? (e.byUsername) : '';
+        const del  = e.deleteData ? (_sys_t.dataDeletedSuffix) : '';
+        sub       = (_sys_t.botLeftServer) + (who ? ` (${who})` : '') + del;
+      } else {
+        iconHtml  = `<div class="log-entry-icon log-icon-other"><i data-lucide="zap" style="width:16px;height:16px;stroke:currentColor;"></i></div>`;
+        title     = e.type || 'event';
+        sub       = JSON.stringify(e).substring(0, 80);
+      }
+      div.innerHTML = `${iconHtml}<div class="log-entry-body"><div class="log-entry-title">${title}</div><div class="log-entry-sub">${sub}</div></div><div class="log-entry-time">${_timeAgo(e.timestamp)}</div>${e.type === 'login' ? `<button class="log-dots-btn" title="${_sys_t.infoBtn}"><i data-lucide="more-vertical" style="width:14px;height:14px;stroke:currentColor;"></i></button>` : ''}`;
+      if (e.type === 'login') {
+        const dotsBtn = div.querySelector('.log-dots-btn');
+        if (dotsBtn) dotsBtn.addEventListener('click', ev => { ev.stopPropagation(); openGeoModal(e); });
+      }
+      return div;
+    }
+
+    function _renderLogs() {
+      const list = document.getElementById('log-list');
+      const label = document.getElementById('log-count-label');
+      list.innerHTML = '';
+      const filtered = _logFilter === 'all' ? _logData.entries : _logData.entries.filter(e => e.type === _logFilter);
+      filtered.forEach(e => list.appendChild(_renderLogEntry(e)));
+      lucide.createIcons();
+      const total = _logData.entries.length;
+      const shown = filtered.length;
+      label.textContent = _tf(_sys_t.logEntries, {shown, total});
+    }
+
+    function _renderClearBanner() {
+      const banner    = document.getElementById('crb');
+      const titleEl   = document.getElementById('crb-title-text');
+      const bodyEl    = document.getElementById('crb-body');
+      const votesEl   = document.getElementById('crb-votes');
+      const actionsEl = document.getElementById('crb-actions');
+      const cr = _logData.clearRequest;
+      if (!cr) { banner.classList.remove('show'); return; }
+      banner.classList.add('show');
+      titleEl.textContent = _tf(_sys_t.logClearReqTitle, {name: cr.requestedByName});
+      const allNeeded = [cr.requestedBy, ...cr.needed];
+      bodyEl.textContent = _tf(_sys_t.logClearReqBody, {n: allNeeded.length});
+      // Votes chips
+      votesEl.innerHTML = allNeeded.map(id => {
+        const name = (id === cr.requestedBy ? cr.requestedByName : id);
+        const status = cr.approvals.includes(id) ? 'approved' : cr.rejections.includes(id) ? 'rejected' : 'pending';
+        const icon  = status === 'approved' ? '✓' : status === 'rejected' ? '✗' : '⏳';
+        return `<span class="crb-vote-chip ${status}">${icon} ${name}</span>`;
+      }).join('');
+      // Actions
+      actionsEl.innerHTML = '';
+      const myVoted = cr.approvals.includes(_meId) || cr.rejections.includes(_meId);
+      if (!myVoted) {
+        const appBtn = document.createElement('button'); appBtn.className = 'crb-btn-approve';
+        appBtn.textContent = _sys_t.approveBtn;
+        appBtn.onclick = () => _voteLogClear(true);
+        const rejBtn = document.createElement('button'); rejBtn.className = 'crb-btn-reject';
+        rejBtn.textContent = _sys_t.rejectBtn;
+        rejBtn.onclick = () => _voteLogClear(false);
+        actionsEl.appendChild(appBtn); actionsEl.appendChild(rejBtn);
+      }
+      if (cr.requestedBy === _meId) {
+        const canBtn = document.createElement('button'); canBtn.className = 'crb-btn-cancel';
+        canBtn.textContent = _sys_t.cancelRequestBtn;
+        canBtn.onclick = _cancelLogClear;
+        actionsEl.appendChild(canBtn);
+      }
+    }
+
+    async function loadLogs() {
+      try {
+        const r = await fetch('/settings/logs');
+        if (!r.ok) return;
+        _logData = await r.json();
+        _renderLogs();
+        _renderClearBanner();
+        document.getElementById('log-clear-btn').disabled = !!_logData.clearRequest;
+      } catch (_) {}
+    }
+    loadLogs();
+
+    document.querySelectorAll('.log-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        _logFilter = btn.dataset.type;
+        _renderLogs();
+      });
+    });
+
+    document.getElementById('log-refresh-btn').addEventListener('click', loadLogs);
+
+    document.getElementById('log-clear-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('log-clear-btn');
+      if (btn.disabled) return;
+      btn.disabled = true;
+      try {
+        const r = await fetch('/settings/logs/clear-request', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const data = await r.json();
+        if (!r.ok) {
+          if (data.error === 'already_pending') { _logData.clearRequest = data.clearRequest; _renderClearBanner(); return; }
+          showSysToast(data.error || 'Failed', 'error'); return;
+        }
+        _logData.clearRequest = data.clearRequest;
+        _renderClearBanner();
+        showSysToast(_sys_t.clearReqSent, 'success');
+      } catch (e) { showSysToast(e.message, 'error'); btn.disabled = false; }
+    });
+
+    async function _voteLogClear(approve) {
+      try {
+        const r = await fetch('/settings/logs/clear-vote', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ approve }),
+        });
+        const data = await r.json();
+        if (!r.ok) { showSysToast(data.error || 'Failed', 'error'); return; }
+        if (data.cleared) {
+          _logData.entries = []; _logData.clearRequest = null;
+          _renderLogs(); _renderClearBanner();
+          document.getElementById('log-clear-btn').disabled = false;
+          showSysToast(_sys_t.logsClearedToast, 'success');
+        } else if (data.rejected) {
+          _logData.clearRequest = null; _renderClearBanner();
+          document.getElementById('log-clear-btn').disabled = false;
+          showSysToast(_sys_t.clearReqRejected, 'error');
+        } else {
+          _logData.clearRequest = data.pending; _renderClearBanner();
+          showSysToast(_sys_t.voteRecorded, 'success');
+        }
+      } catch (e) { showSysToast(e.message,'error'); }
+    }
+
+    async function _cancelLogClear() {
+      try {
+        const r = await fetch('/settings/logs/clear-cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const data = await r.json();
+        if (!r.ok) { showSysToast(data.error || 'Failed', 'error'); return; }
+        _logData.clearRequest = null; _renderClearBanner();
+        document.getElementById('log-clear-btn').disabled = false;
+        showSysToast(_sys_t.clearReqCancelled, 'success');
+      } catch (e) { showSysToast(e.message,'error'); }
+    }
+
+    /* ── Ships management ── */
+    const _shipsLang = '<%= lang %>';
+    const _shipsCache = {}; // id → user info from /api/user/:id
+
+    function _buildChipInner(sid) {
+      const info = _shipsCache[sid];
+      const av = info ? info.avatar : 'https://cdn.discordapp.com/embed/avatars/0.png';
+      const name = info ? info.displayName : sid;
+      return `<img class="ships-chip-av" src="${av}" alt="" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">`
+           + `<div class="ships-chip-info"><span class="ships-chip-name">${name}</span><span class="ships-chip-id">${sid}</span></div>`
+           + `<button class="ships-chip-remove" data-uid="${sid}" title="Remove"><i data-lucide="x" style="width:10px;height:10px;stroke:currentColor;"></i></button>`;
+    }
+
+    function _renderShipsChips(ships) {
+      const wrap = document.getElementById('ships-chips');
+      wrap.innerHTML = '';
+      (ships || []).forEach(sid => {
+        const chip = document.createElement('div');
+        chip.className = 'ships-chip';
+        chip.dataset.id = sid;
+        chip.innerHTML = _buildChipInner(sid);
+        wrap.appendChild(chip);
+      });
+      lucide.createIcons();
+      wrap.querySelectorAll('.ships-chip-remove').forEach(btn => {
+        btn.addEventListener('click', () => removeShip(btn.dataset.uid));
+      });
+    }
+
+    async function _hydrateShips(ids) {
+      await Promise.all((ids || []).map(async sid => {
+        if (_shipsCache[sid]) return;
+        try {
+          const r = await fetch(`/api/user/${sid}`);
+          if (r.ok) _shipsCache[sid] = await r.json();
+        } catch (_) {}
+      }));
+      _renderShipsChips(ids);
+    }
+
+    // Initial hydration
+    const _initialShips = JSON.parse(document.getElementById('ships-server-data').textContent || '[]');
+    _hydrateShips(_initialShips);
+
+    async function removeShip(uid) {
+      const label = _shipsCache[uid]?.displayName || uid;
+      if (!confirm(_tf(_sys_t.removeShipConfirm, {label}))) return;
+      try {
+        const r = await fetch(`/settings/ships/${uid}`, { method: 'DELETE' });
+        const d = await r.json();
+        if (!r.ok) { showSysToast(d.error || 'Failed', 'error'); return; }
+        await _hydrateShips(d.ships);
+        showSysToast(_sys_t.removedToast, 'success');
+      } catch (e) { showSysToast(e.message, 'error'); }
+    }
+
+    /* ── Ships confirm modal ── */
+    let _pendingShipUid = null;
+    const _shipsModal = document.getElementById('ships-confirm-modal');
+
+    function _openShipsModal(info) {
+      _pendingShipUid = info.id;
+      const banner = document.getElementById('ships-modal-banner');
+      const avWrap = `<div class="ships-modal-av-wrap"><img class="ships-modal-av" src="${info.avatar}" alt="avatar" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"></div>`;
+      if (info.banner) {
+        banner.innerHTML = `<img class="banner-img" src="${info.banner}" alt="banner">${avWrap}`;
+      } else {
+        banner.style.background = info.bannerColor || 'linear-gradient(135deg,rgba(124,58,237,.5),rgba(6,182,212,.3))';
+        banner.innerHTML = avWrap;
+      }
+      document.getElementById('ships-modal-dname').textContent = info.displayName;
+      document.getElementById('ships-modal-uname').textContent = '@' + info.username;
+      document.getElementById('ships-modal-uid').textContent = info.id;
+      document.getElementById('ships-modal-confirm').disabled = false;
+      _shipsModal.classList.add('open');
+    }
+
+    function _closeShipsModal() { _shipsModal.classList.remove('open'); _pendingShipUid = null; }
+
+    document.getElementById('ships-modal-cancel').addEventListener('click', _closeShipsModal);
+    _shipsModal.addEventListener('click', e => { if (e.target === _shipsModal) _closeShipsModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') _closeShipsModal(); });
+
+    document.getElementById('ships-modal-confirm').addEventListener('click', async () => {
+      if (!_pendingShipUid) return;
+      const uid = _pendingShipUid;
+      const confirmBtn = document.getElementById('ships-modal-confirm');
+      confirmBtn.disabled = true;
+      try {
+        const r = await fetch('/settings/ships', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: uid }),
+        });
+        const d = await r.json();
+        if (!r.ok) { showSysToast(d.error || 'Failed', 'error'); confirmBtn.disabled = false; return; }
+        _closeShipsModal();
+        document.getElementById('ships-add-inp').value = '';
+        await _hydrateShips(d.ships);
+        showSysToast(_sys_t.addedToast, 'success');
+      } catch (e) { showSysToast(e.message, 'error'); confirmBtn.disabled = false; }
+    });
+
+    document.getElementById('ships-add-btn').addEventListener('click', async () => {
+      const inp = document.getElementById('ships-add-inp');
+      const uid = inp.value.trim();
+      if (!uid || !/^\d{10,20}$/.test(uid)) {
+        showSysToast(_sys_t.enterValidIdError, 'error'); return;
+      }
+      const addBtn = document.getElementById('ships-add-btn');
+      addBtn.disabled = true;
+      try {
+        const r = await fetch(`/api/user/${uid}`);
+        if (!r.ok) {
+          const e = await r.json();
+          showSysToast(e.error || (_sys_t.userNotFoundError), 'error');
+          addBtn.disabled = false; return;
+        }
+        const info = await r.json();
+        _shipsCache[uid] = info;
+        _openShipsModal(info);
+      } catch (e) { showSysToast(e.message, 'error'); }
+      addBtn.disabled = false;
+    });
+    document.getElementById('ships-add-inp').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('ships-add-btn').click(); });
+
+    /* ── Owners management ── */
+    const _ownersCache = {};
+
+    function _renderOwnersChips(owners) {
+      const wrap = document.getElementById('owners-chips');
+      wrap.innerHTML = '';
+      (owners || []).forEach(oid => {
+        const info = _ownersCache[oid];
+        const av = info ? info.avatar : 'https://cdn.discordapp.com/embed/avatars/0.png';
+        const name = info ? info.displayName : oid;
+        const chip = document.createElement('div');
+        chip.className = 'ships-chip';
+        chip.dataset.id = oid;
+        chip.innerHTML = `<img class="ships-chip-av" src="${av}" alt="" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">`
+          + `<div class="ships-chip-info"><span class="ships-chip-name">${name}</span><span class="ships-chip-id">${oid}</span></div>`
+          + `<button class="ships-chip-remove" data-uid="${oid}" title="Remove"><i data-lucide="x" style="width:10px;height:10px;stroke:currentColor;"></i></button>`;
+        wrap.appendChild(chip);
+      });
+      lucide.createIcons();
+      wrap.querySelectorAll('.ships-chip-remove').forEach(btn => {
+        btn.addEventListener('click', () => removeOwner(btn.dataset.uid));
+      });
+    }
+
+    async function _hydrateOwners(ids) {
+      await Promise.all((ids || []).map(async oid => {
+        if (_ownersCache[oid]) return;
+        try {
+          const r = await fetch(`/api/user/${oid}`);
+          if (r.ok) _ownersCache[oid] = await r.json();
+        } catch (_) {}
+      }));
+      _renderOwnersChips(ids);
+    }
+
+    const _initialOwners = JSON.parse(document.getElementById('owners-server-data').textContent || '[]');
+    _hydrateOwners(_initialOwners);
+
+    async function removeOwner(uid) {
+      const label = _ownersCache[uid]?.displayName || uid;
+      if (!confirm(_tf(_sys_t.removeOwnerConfirm, {label}))) return;
+      try {
+        const r = await fetch(`/settings/owners/${uid}`, { method: 'DELETE' });
+        const d = await r.json();
+        if (!r.ok) { showSysToast(d.error || 'Failed', 'error'); return; }
+        await _hydrateOwners(d.owners);
+        showSysToast(_sys_t.removedToast, 'success');
+      } catch (e) { showSysToast(e.message, 'error'); }
+    }
+
+    /* ── Owners confirm modal ── */
+    let _pendingOwnerUid = null;
+    const _ownersModal = document.getElementById('owners-confirm-modal');
+
+    function _openOwnersModal(info) {
+      _pendingOwnerUid = info.id;
+      const banner = document.getElementById('owners-modal-banner');
+      const avWrap = `<div class="ships-modal-av-wrap"><img class="ships-modal-av" src="${info.avatar}" alt="avatar" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"></div>`;
+      if (info.banner) {
+        banner.innerHTML = `<img class="banner-img" src="${info.banner}" alt="banner">${avWrap}`;
+      } else {
+        banner.style.background = info.bannerColor || 'linear-gradient(135deg,rgba(212,163,0,.4),rgba(234,88,12,.3))';
+        banner.innerHTML = avWrap;
+      }
+      document.getElementById('owners-modal-dname').textContent = info.displayName;
+      document.getElementById('owners-modal-uname').textContent = '@' + info.username;
+      document.getElementById('owners-modal-uid').textContent = info.id;
+      document.getElementById('owners-modal-confirm').disabled = false;
+      _ownersModal.classList.add('open');
+    }
+
+    function _closeOwnersModal() { _ownersModal.classList.remove('open'); _pendingOwnerUid = null; }
+
+    document.getElementById('owners-modal-cancel').addEventListener('click', _closeOwnersModal);
+    _ownersModal.addEventListener('click', e => { if (e.target === _ownersModal) _closeOwnersModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { _closeOwnersModal(); } });
+
+    document.getElementById('owners-modal-confirm').addEventListener('click', async () => {
+      if (!_pendingOwnerUid) return;
+      const uid = _pendingOwnerUid;
+      const confirmBtn = document.getElementById('owners-modal-confirm');
+      confirmBtn.disabled = true;
+      try {
+        const r = await fetch('/settings/owners', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: uid }),
+        });
+        const d = await r.json();
+        if (!r.ok) { showSysToast(d.error || 'Failed', 'error'); confirmBtn.disabled = false; return; }
+        _closeOwnersModal();
+        document.getElementById('owners-add-inp').value = '';
+        await _hydrateOwners(d.owners);
+        showSysToast(_sys_t.addedToast, 'success');
+      } catch (e) { showSysToast(e.message, 'error'); confirmBtn.disabled = false; }
+    });
+
+    document.getElementById('owners-add-btn').addEventListener('click', async () => {
+      const inp = document.getElementById('owners-add-inp');
+      const uid = inp.value.trim();
+      if (!uid || !/^\d{10,20}$/.test(uid)) {
+        showSysToast(_sys_t.enterValidIdError, 'error'); return;
+      }
+      const addBtn = document.getElementById('owners-add-btn');
+      addBtn.disabled = true;
+      try {
+        const r = await fetch(`/api/user/${uid}`);
+        if (!r.ok) {
+          const e = await r.json();
+          showSysToast(e.error || (_sys_t.userNotFoundError), 'error');
+          addBtn.disabled = false; return;
+        }
+        const info = await r.json();
+        _ownersCache[uid] = info;
+        _openOwnersModal(info);
+      } catch (e) { showSysToast(e.message, 'error'); }
+      addBtn.disabled = false;
+    });
+    document.getElementById('owners-add-inp').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('owners-add-btn').click(); });
+
+    /* ── Active Sessions ── */
+    async function _loadSessions() {
+      const list = document.getElementById('sess-list');
+      list.innerHTML = `<div style="color:var(--muted);font-size:.78rem;padding:10px 0;text-align:center;"><i data-lucide="loader-2" style="width:14px;height:14px;stroke:currentColor;animation:spin 1s linear infinite;"></i></div>`;
+      lucide.createIcons();
+      try {
+        const r = await fetch('/settings/active-sessions');
+        const sessions = await r.json();
+        list.innerHTML = '';
+        if (!sessions.length) {
+          list.innerHTML = `<div style="color:var(--muted);font-size:.78rem;padding:14px 0;text-align:center;">${_sys_t.noActiveSessions}</div>`;
+          return;
+        }
+        sessions.forEach(s => {
+          const row = document.createElement('div');
+          row.className = 'sess-row' + (s.isSelf ? ' is-self' : '');
+          const av = s.avatar
+            ? `<img src="https://cdn.discordapp.com/avatars/${s.userId}/${s.avatar}.png?size=80" alt="" onerror="this.style.display='none'" />`
+            : `<i data-lucide="user" style="width:18px;height:18px;stroke:currentColor;"></i>`;
+          const selfBadge = s.isSelf ? `<span class="sess-self-badge">${_sys_t.youBadge}</span>` : '';
+          const loginStr  = s.loginAt ? _timeAgo(s.loginAt) : '';
+          row.innerHTML = `
+            <div class="sess-avatar">${av}</div>
+            <div class="sess-info">
+              <div class="sess-name">${s.displayName || s.username || s.userId}<span class="sess-uid">${s.userId}</span>${selfBadge}</div>
+              <div class="sess-meta">
+                ${s.ip && s.ip !== 'unknown' ? `<span>🌐 <code style="font-size:.7rem;">${s.ip}</code></span>` : ''}
+                ${loginStr ? `<span>🕒 ${loginStr}</span>` : ''}
+              </div>
+            </div>
+            <button class="sess-kill-btn" data-sid="${s.sid}" ${s.isSelf ? 'disabled title="Cannot kill own session"' : `title="${_sys_t.endSessionTitle}"`}>
+              <i data-lucide="log-out" style="width:13px;height:13px;stroke:currentColor;"></i>
+              ${_sys_t.endBtn}
+            </button>`;
+          list.appendChild(row);
+        });
+        lucide.createIcons();
+        list.querySelectorAll('.sess-kill-btn:not(:disabled)').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm(_sys_t.endThisSession)) return;
+            btn.disabled = true;
+            const r = await fetch(`/settings/active-sessions/${btn.dataset.sid}`, { method: 'DELETE' });
+            const d = await r.json();
+            if (!r.ok) { showSysToast(d.error || 'Failed', 'error'); btn.disabled = false; return; }
+            showSysToast(_sys_t.sessionEndedToast, 'success');
+            _loadSessions();
+          });
+        });
+      } catch (e) { list.innerHTML = `<div style="color:#fca5a5;font-size:.78rem;">${e.message}</div>`; }
+    }
+    document.getElementById('sess-refresh-btn').addEventListener('click', _loadSessions);
+    _loadSessions();
+
+    /* ── Geo modal ── */
+    function openGeoModal(entry) {
+      const backdrop = document.getElementById('geo-modal-backdrop');
+      const avEl  = document.getElementById('geo-av');
+      avEl.innerHTML = entry.avatar
+        ? `<img src="https://cdn.discordapp.com/avatars/${entry.userId}/${entry.avatar}.png?size=80" alt=""/>`
+        : `<i data-lucide="user" style="width:22px;height:22px;stroke:currentColor;"></i>`;
+      document.getElementById('geo-name').textContent  = entry.displayName || entry.username || '—';
+      document.getElementById('geo-uname').textContent = entry.username ? `@${entry.username}` : '—';
+      document.getElementById('geo-uid').textContent   = entry.userId || '—';
+      document.getElementById('geo-fields').innerHTML  = `<div class="geo-field full" style="text-align:center;color:var(--muted);font-size:.8rem;"><i data-lucide="loader-2" style="width:16px;height:16px;stroke:currentColor;animation:spin 1s linear infinite;"></i></div>`;
+      backdrop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      lucide.createIcons();
+      if (entry.ip && entry.ip !== 'unknown' && entry.ip !== 'test') {
+        fetch(`/settings/geo?ip=${encodeURIComponent(entry.ip)}`).then(r => r.json()).then(geo => {
+          const fields   = document.getElementById('geo-fields');
+          const ipField  = `<div class="geo-field full"><div class="geo-field-label">${_sys_t.geoIpAddress}</div><div class="geo-field-value mono">${entry.ip}</div></div>`;
+          if (!geo) {
+            fields.innerHTML = ipField + `<div class="geo-field full"><div class="geo-field-label">${_sys_t.geoLocation}</div><div class="geo-field-value" style="color:var(--muted);">${_sys_t.geoNotAvailable}</div></div>`;
+          } else {
+            fields.innerHTML = ipField +
+              `<div class="geo-field"><div class="geo-field-label">${_sys_t.geoCountry}</div><div class="geo-field-value">${geo.country || '—'}</div></div>` +
+              `<div class="geo-field"><div class="geo-field-label">${_sys_t.geoRegion}</div><div class="geo-field-value">${geo.region ? geo.region + (geo.city ? ` / ${geo.city}` : '') : '—'}</div></div>` +
+              `<div class="geo-field"><div class="geo-field-label">${_sys_t.geoTimezone}</div><div class="geo-field-value">${geo.timezone || '—'}</div></div>` +
+              `<div class="geo-field"><div class="geo-field-label">${_sys_t.geoIsp}</div><div class="geo-field-value">${geo.org || '—'}</div></div>` +
+              (geo.ll ? `<div class="geo-field full"><div class="geo-field-label">${_sys_t.geoCoordinates}</div><div class="geo-field-value mono">${geo.ll[0]}, ${geo.ll[1]}</div></div>` : '');
+          }
+          lucide.createIcons();
+        }).catch(() => {});
+      } else {
+        document.getElementById('geo-fields').innerHTML = `<div class="geo-field full"><div class="geo-field-label">IP</div><div class="geo-field-value mono">${entry.ip || '—'}</div></div><div class="geo-field full" style="color:var(--muted);font-size:.78rem;">${_sys_t.noIpRecorded}</div>`;
+        lucide.createIcons();
+      }
+    }
+    function closeGeoModal() {
+      document.getElementById('geo-modal-backdrop').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('geo-close-btn').addEventListener('click', closeGeoModal);
+    document.getElementById('geo-modal-backdrop').addEventListener('click', e => { if (e.target === e.currentTarget) closeGeoModal(); });
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       Auto Backup MongoDB
+       ═══════════════════════════════════════════════════════════════════════ */
+    (function () {
+      const _t = _sys_t;
+      let _bkpTargets        = [];
+      let _bkpEditId         = null;
+      let _bkpModalWebhooks  = []; // {masked, isNew, rawUrl?}
+
+      const MODE_LABELS = {
+        changestream: _t.autoBackupModeCS     || 'Change Stream',
+        queue:        _t.autoBackupModeQ      || 'Queue',
+        schedule:     _t.autoBackupModeSched  || 'Scheduled',
+      };
+
+      function _esc(s) {
+        return String(s||'')
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      function _tf(tpl, vars) {
+        if (!tpl) return '';
+        return tpl.replace(/\{(\w+)\}/g, (_,k) => vars[k] ?? '');
+      }
+
+      function _msToLabel(ms) {
+        if (!ms) return '—';
+        const m = Math.round(ms / 60000);
+        if (m < 60)   return `${m} ${_t.autoBackupMin || 'min'}`;
+        const h = Math.round(m / 60);
+        if (h < 24)   return `${h} ${h === 1 ? (_t.autoBackupHour||'hr') : (_t.autoBackupHours||'hrs')}`;
+        const d = Math.round(h / 24);
+        if (d < 30)   return `${d} ${d === 1 ? (_t.autoBackupDay||'day') : (_t.autoBackupDays||'days')}`;
+        return `${Math.round(d/30)} ${_t.autoBackupMonth||'mo'}`;
+      }
+
+      function _timeAgo(iso) {
+        try {
+          const diff = Date.now() - new Date(iso).getTime();
+          if (diff < 60000)  return '<1m';
+          if (diff < 3600000) return `${Math.floor(diff/60000)}m`;
+          if (diff < 86400000) return `${Math.floor(diff/3600000)}h`;
+          return `${Math.floor(diff/86400000)}d`;
+        } catch { return iso; }
+      }
+
+      /* ── Render target list ── */
+      function _renderList(targets) {
+        const loading = document.getElementById('bkp-loading');
+        const empty   = document.getElementById('bkp-empty');
+        const list    = document.getElementById('bkp-list');
+        if (!loading || !empty || !list) return;
+        loading.style.display = 'none';
+        if (!targets.length) {
+          empty.style.display = '';
+          list.innerHTML = '';
+          return;
+        }
+        empty.style.display = 'none';
+        list.innerHTML = targets.map(t => {
+          const dotClass = !t.enabled
+            ? 'off'
+            : (t.lastStatus === 'success' ? 'ok' : t.lastStatus === 'failed' ? 'fail' : '');
+          const modeLabel = MODE_LABELS[t.mode] || t.mode;
+          const modeBadge = t.mode === 'changestream'
+            ? `<span class="bkp-badge bkp-badge-cs"><i data-lucide="zap" style="width:10px;height:10px;stroke:currentColor;"></i> ${_esc(modeLabel)}</span>`
+            : t.mode === 'queue'
+            ? `<span class="bkp-badge bkp-badge-q"><i data-lucide="layers" style="width:10px;height:10px;stroke:currentColor;"></i> ${_esc(modeLabel)}</span>`
+            : `<span class="bkp-badge bkp-badge-s"><i data-lucide="clock" style="width:10px;height:10px;stroke:currentColor;"></i> ${_esc(modeLabel)}${t.scheduleMs ? ` (${_msToLabel(t.scheduleMs)})` : ''}</span>`;
+          const disabledBadge = !t.enabled
+            ? `<span class="bkp-badge bkp-badge-off">${_t.autoBackupDisabled||'Disabled'}</span>` : '';
+          const lastRun = t.lastRun ? _timeAgo(t.lastRun) : (_t.autoBackupNeverRun||'Never');
+          const diff = t.nextAt ? (t.nextAt - Date.now()) : 0;
+          const nextSched = (t.mode === 'schedule' && t.nextAt && t.enabled && diff > 0)
+            ? `<span><i data-lucide="chevrons-right" style="width:10px;height:10px;stroke:currentColor;vertical-align:middle;"></i> ${_t.autoBackupIn||'in'} ${_msToLabel(diff)}</span>` : '';
+          const stats = t.stats || { success: 0, failed: 0, totalDocs: 0 };
+          return `<div class="bkp-row" data-id="${_esc(t.id)}">
+            <div class="bkp-status-dot ${dotClass}" title="${_esc(t.lastStatus||'')}"></div>
+            <div class="bkp-info">
+              <div class="bkp-name">${_esc(t.name)} ${modeBadge}${disabledBadge}</div>
+              <div class="bkp-uri">${_esc(t.uriMasked||'')}</div>
+              <div class="bkp-meta">
+                <span><i data-lucide="history" style="width:10px;height:10px;stroke:currentColor;vertical-align:middle;"></i> ${_esc(lastRun)}</span>
+                <span><i data-lucide="check-circle" style="width:10px;height:10px;stroke:#86efac;vertical-align:middle;"></i> ${stats.success} <i data-lucide="x-circle" style="width:10px;height:10px;stroke:#fca5a5;vertical-align:middle;"></i> ${stats.failed}</span>
+                <span><i data-lucide="file-text" style="width:10px;height:10px;stroke:currentColor;vertical-align:middle;"></i> ${Number(stats.totalDocs).toLocaleString()}</span>
+                ${nextSched}
+              </div>
+            </div>
+            <div class="bkp-actions">
+              <button class="bkp-icon-btn run" data-action="run" data-id="${_esc(t.id)}" title="${_t.autoBackupRunNow||'Run Now'}"><i data-lucide="play" style="width:13px;height:13px;stroke:currentColor;"></i></button>
+              <button class="bkp-icon-btn" data-action="edit" data-id="${_esc(t.id)}" title="${_t.autoBackupEdit||'Edit'}"><i data-lucide="pencil" style="width:13px;height:13px;stroke:currentColor;"></i></button>
+              <button class="bkp-icon-btn del" data-action="del" data-id="${_esc(t.id)}" title="${_t.autoBackupDelete||'Delete'}"><i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;"></i></button>
+            </div>
+          </div>`;
+        }).join('');
+
+        list.querySelectorAll('[data-action]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id     = btn.dataset.id;
+            const action = btn.dataset.action;
+            if (action === 'run') {
+              if (!confirm(_t.autoBackupRunConfirm || 'Start a full backup now?')) return;
+              btn.disabled = true;
+              try {
+                const r = await fetch(`/settings/backup/${encodeURIComponent(id)}/run`, { method: 'POST' });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.error || 'Failed');
+                showSysToast(
+                  `${_t.autoBackupRunDone||'Done'} — ${(d.duration/1000).toFixed(1)}s, ${Number(d.totalDocs||0).toLocaleString()} docs`,
+                  'success'
+                );
+                _loadBackups();
+              } catch (e) { showSysToast(e.message, 'error'); btn.disabled = false; }
+            } else if (action === 'edit') {
+              const tgt = _bkpTargets.find(x => x.id === id);
+              if (tgt) _openModal(tgt);
+            } else if (action === 'del') {
+              if (!confirm(_t.autoBackupDeleteConfirm || 'Delete this backup target?')) return;
+              btn.disabled = true;
+              try {
+                const r = await fetch(`/settings/backup/${encodeURIComponent(id)}`, { method: 'DELETE' });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.error || 'Failed');
+                showSysToast(_t.autoBackupDeleted||'Deleted', 'success');
+                _loadBackups();
+              } catch (e) { showSysToast(e.message, 'error'); btn.disabled = false; }
+            }
+          });
+        });
+      }
+
+      /* ── Webhook list inside modal ── */
+      function _renderModalWebhooks() {
+        const list = document.getElementById('bkp-wh-list');
+        if (!list) return;
+        if (!_bkpModalWebhooks.length) {
+          list.innerHTML = `<p style="font-size:.72rem;color:var(--muted,#888);">${_t.autoBackupWebhookNone||'No webhooks added'}</p>`;
+          return;
+        }
+        list.innerHTML = _bkpModalWebhooks.map((w, i) =>
+          `<div class="bkp-wh-item">
+            <span class="bkp-wh-url">${_esc(w.masked)}</span>
+            <button type="button" class="bkp-wh-del" data-wi="${i}" title="Remove">✕</button>
+          </div>`
+        ).join('');
+        list.querySelectorAll('.bkp-wh-del').forEach(b => {
+          b.addEventListener('click', () => {
+            _bkpModalWebhooks.splice(+b.dataset.wi, 1);
+            _renderModalWebhooks();
+          });
+        });
+      }
+
+      /* ── Modal: open ── */
+      function _openModal(target) {
+        _bkpEditId = target ? target.id : null;
+        const titleEl = document.getElementById('bkp-modal-title');
+        if (titleEl) titleEl.textContent = target
+          ? (_t.autoBackupEditTitle||'Edit Backup Target')
+          : (_t.autoBackupAddTitle||'Add Backup Target');
+
+        document.getElementById('bkp-name-inp').value = target?.name || '';
+        document.getElementById('bkp-uri-inp').value  = '';
+        const uriInp = document.getElementById('bkp-uri-inp');
+        uriInp.type        = 'password';
+        uriInp.placeholder = target
+          ? (_t.autoBackupUriEditHint || 'Leave blank to keep current URI')
+          : 'mongodb+srv://user:pass@host/db';
+        const revIcon = document.querySelector('#bkp-uri-reveal i');
+        if (revIcon) { revIcon.setAttribute('data-lucide','eye'); lucide.createIcons({nodes:[revIcon]}); }
+
+        document.getElementById('bkp-enabled-toggle').checked = target?.enabled !== false;
+
+        // Mode
+        const modeVal = target?.mode || 'changestream';
+        document.querySelectorAll('input[name="bkp-mode"]').forEach(r => { r.checked = r.value === modeVal; });
+        _toggleIntervalField(modeVal);
+
+        // Schedule preset
+        const sel = document.getElementById('bkp-interval-preset');
+        const cusRow = document.getElementById('bkp-custom-row');
+        if (target?.scheduleMs) {
+          const presets = ['60000','300000','900000','1800000','3600000','21600000','43200000','86400000','604800000','2592000000'];
+          if (presets.includes(String(target.scheduleMs))) {
+            sel.value = String(target.scheduleMs);
+            cusRow.style.display = 'none';
+          } else {
+            sel.value = 'custom';
+            cusRow.style.display = '';
+            document.getElementById('bkp-custom-min').value = Math.round(target.scheduleMs / 60000);
+          }
+        } else {
+          sel.value = '3600000';
+          cusRow.style.display = 'none';
+        }
+
+        // Webhooks
+        _bkpModalWebhooks = (target?.notifyWebhooks || []).map(w => ({
+          masked: w,
+          isNew: false,
+        }));
+        _renderModalWebhooks();
+        document.getElementById('bkp-wh-inp').value = '';
+
+        // Test result
+        const tRes = document.getElementById('bkp-test-result');
+        if (tRes) tRes.style.display = 'none';
+
+        // Show
+        document.getElementById('bkp-modal-backdrop').classList.add('open');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('bkp-name-inp').focus();
+      }
+
+      function _closeModal() {
+        const bd = document.getElementById('bkp-modal-backdrop');
+        if (bd) bd.classList.remove('open');
+        document.body.style.overflow = '';
+        _bkpEditId = null;
+        _bkpModalWebhooks = [];
+      }
+
+      function _toggleIntervalField(mode) {
+        const field = document.getElementById('bkp-interval-field');
+        if (field) field.style.display = mode === 'schedule' ? '' : 'none';
+      }
+
+      function _getScheduleMs() {
+        const preset = document.getElementById('bkp-interval-preset').value;
+        if (preset === 'custom') {
+          const mins = parseInt(document.getElementById('bkp-custom-min').value, 10);
+          if (isNaN(mins) || mins < 1 || mins > 43200) return null;
+          return mins * 60000;
+        }
+        return parseInt(preset, 10) || null;
+      }
+
+      /* ── Save target ── */
+      async function _saveModal() {
+        const name    = document.getElementById('bkp-name-inp').value.trim();
+        const uri     = document.getElementById('bkp-uri-inp').value.trim();
+        const mode    = document.querySelector('input[name="bkp-mode"]:checked')?.value || 'changestream';
+        const enabled = document.getElementById('bkp-enabled-toggle').checked;
+
+        if (!name) { showSysToast(_t.autoBackupNameRequired||'Name required', 'error'); return; }
+        if (!_bkpEditId && !uri) { showSysToast(_t.autoBackupUriRequired||'URI required', 'error'); return; }
+        if (uri && !/^mongodb(\+srv)?:\/\//i.test(uri)) {
+          showSysToast(_t.autoBackupUriInvalid||'Invalid MongoDB URI', 'error'); return;
+        }
+
+        let scheduleMs = null;
+        if (mode === 'schedule') {
+          scheduleMs = _getScheduleMs();
+          if (!scheduleMs) { showSysToast(_t.autoBackupIntervalInvalid||'Invalid interval', 'error'); return; }
+        }
+
+        const newWebhooks = _bkpModalWebhooks.filter(w => w.isNew).map(w => w.rawUrl);
+
+        const saveBtn  = document.getElementById('bkp-modal-save');
+        const saveTxt  = document.getElementById('bkp-modal-save-text');
+        const origTxt  = saveTxt?.textContent;
+        saveBtn.disabled = true;
+        if (saveTxt) saveTxt.textContent = _t.saving || 'Saving…';
+
+        try {
+          let url, method, body;
+          if (_bkpEditId) {
+            url    = `/settings/backup/${encodeURIComponent(_bkpEditId)}`;
+            method = 'PUT';
+            body   = { name, mode, enabled, scheduleMs };
+            if (uri) body.uri = uri;
+
+            // Compute webhook changes
+            const tgt = _bkpTargets.find(x => x.id === _bkpEditId);
+            const existingCount = (tgt?.notifyWebhooks || []).length;
+            const keptIndices   = _bkpModalWebhooks.filter(w => !w.isNew).map((_, i) => i); // 0-based in original array
+            const removedIdxs   = [];
+            for (let i = 0; i < existingCount; i++) {
+              if (!keptIndices.includes(i)) removedIdxs.push(i);
+            }
+            if (removedIdxs.length) body.webhooksRemove  = removedIdxs;
+            if (newWebhooks.length) body.webhooksAppend  = newWebhooks;
+          } else {
+            url    = '/settings/backup';
+            method = 'POST';
+            body   = { name, uri, mode, enabled, scheduleMs, notifyWebhooks: newWebhooks };
+          }
+
+          const r = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || 'Failed');
+          showSysToast(_t.autoBackupSaved||'Saved', 'success');
+          _closeModal();
+          _loadBackups();
+        } catch (e) { showSysToast(e.message, 'error'); }
+
+        saveBtn.disabled = false;
+        if (saveTxt) saveTxt.textContent = origTxt;
+      }
+
+      /* ── Load from server ── */
+      async function _loadBackups() {
+        const loading = document.getElementById('bkp-loading');
+        const empty   = document.getElementById('bkp-empty');
+        if (loading) loading.style.display = '';
+        if (empty)   empty.style.display   = 'none';
+        try {
+          const r = await fetch('/settings/backup');
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || 'Failed');
+          _bkpTargets = d.targets || [];
+          _renderList(_bkpTargets);
+        } catch (e) {
+          if (loading) loading.style.display = 'none';
+          if (empty) { empty.textContent = e.message; empty.style.display = ''; }
+        }
+      }
+
+      /* ── Wire events ── */
+      (function _wireBackupEvents() {
+        const addBtn = document.getElementById('bkp-add-btn');
+        if (addBtn) addBtn.addEventListener('click', () => _openModal(null));
+
+        const cancelBtn = document.getElementById('bkp-modal-cancel');
+        if (cancelBtn) cancelBtn.addEventListener('click', _closeModal);
+
+        const backdrop = document.getElementById('bkp-modal-backdrop');
+        if (backdrop) backdrop.addEventListener('click', e => { if (e.target === e.currentTarget) _closeModal(); });
+
+        const saveBtn = document.getElementById('bkp-modal-save');
+        if (saveBtn) saveBtn.addEventListener('click', _saveModal);
+
+        document.addEventListener('keydown', e => {
+          if (e.key === 'Escape') {
+            const bd = document.getElementById('bkp-modal-backdrop');
+            if (bd && bd.classList.contains('open')) _closeModal();
+          }
+        });
+
+        // URI reveal
+        const revBtn = document.getElementById('bkp-uri-reveal');
+        if (revBtn) revBtn.addEventListener('click', () => {
+          const inp = document.getElementById('bkp-uri-inp');
+          inp.type  = inp.type === 'password' ? 'text' : 'password';
+          const ic  = revBtn.querySelector('i');
+          if (ic) {
+            ic.setAttribute('data-lucide', inp.type === 'password' ? 'eye' : 'eye-off');
+            lucide.createIcons({ nodes: [ic] });
+          }
+        });
+
+        // Mode radio
+        document.querySelectorAll('input[name="bkp-mode"]').forEach(r => {
+          r.addEventListener('change', () => _toggleIntervalField(r.value));
+        });
+
+        // Preset → custom
+        const presetSel = document.getElementById('bkp-interval-preset');
+        if (presetSel) presetSel.addEventListener('change', function() {
+          const cr = document.getElementById('bkp-custom-row');
+          if (cr) cr.style.display = this.value === 'custom' ? '' : 'none';
+        });
+
+        // Add webhook
+        const whAddBtn = document.getElementById('bkp-wh-add-btn');
+        const whInp    = document.getElementById('bkp-wh-inp');
+        function _addWebhook() {
+          const val = (whInp?.value||'').trim();
+          if (!/^https:\/\/discord\.com\/api\/webhooks\/\d+\/.+/.test(val)) {
+            showSysToast(_t.autoBackupWebhookInvalid||'Invalid Discord webhook URL', 'error'); return;
+          }
+          _bkpModalWebhooks.push({
+            masked: val.replace(/(\/api\/webhooks\/\d+\/)(.+)$/, '$1***'),
+            isNew:  true,
+            rawUrl: val,
+          });
+          if (whInp) whInp.value = '';
+          _renderModalWebhooks();
+        }
+        if (whAddBtn) whAddBtn.addEventListener('click', _addWebhook);
+        if (whInp) whInp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); _addWebhook(); } });
+
+        // Test connection
+        const testBtn = document.getElementById('bkp-test-btn');
+        if (testBtn) testBtn.addEventListener('click', async () => {
+          const uri    = (document.getElementById('bkp-uri-inp')?.value || '').trim();
+          const testId = _bkpEditId;
+          if (!uri && !testId) { showSysToast(_t.autoBackupUriRequired||'Enter a URI first', 'error'); return; }
+          if (uri && !/^mongodb(\+srv)?:\/\//i.test(uri)) {
+            showSysToast(_t.autoBackupUriInvalid||'Invalid URI', 'error'); return;
+          }
+          const res = document.getElementById('bkp-test-result');
+          testBtn.disabled = true;
+          const origHtml = testBtn.innerHTML;
+          testBtn.textContent = _t.autoBackupTesting || 'Testing…';
+          if (res) res.style.display = 'none';
+          try {
+            const body = uri ? { uri } : { id: testId };
+            const r = await fetch('/settings/backup/test', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            const d = await r.json();
+            if (!r.ok) throw new Error(d.error || 'Failed');
+            if (res) {
+              res.className     = 'bkp-test-result ok';
+              res.textContent   = _tf(_t.autoBackupTestOk || '✅ Connected — {n} collections', { n: d.collections });
+              res.style.display = '';
+            }
+          } catch (e) {
+            if (res) {
+              res.className     = 'bkp-test-result fail';
+              res.textContent   = _tf(_t.autoBackupTestFail || '❌ {msg}', { msg: e.message });
+              res.style.display = '';
+            }
+          }
+          testBtn.disabled = false;
+          testBtn.innerHTML = origHtml;
+        });
+      })();
+
+      /* ── Initial load ── */
+      _loadBackups();
+    })(); // end Auto Backup IIFE
+
+    /* ── Profile sidebar ── */
+    const bannerSolid = document.querySelector('.prof-banner-solid');
+    if (bannerSolid && bannerSolid.dataset.bg) bannerSolid.style.background = bannerSolid.dataset.bg;
+
+    const profSidebar  = document.getElementById('prof-sidebar');
+    const profBackdrop = document.getElementById('prof-backdrop');
+    const openBtn      = document.getElementById('open-profile');
+    const closeBtn     = document.getElementById('close-profile');
+    const copyId       = document.getElementById('prof-copy-id');
+
+    function openProfile()  { profSidebar.classList.add('open'); profBackdrop.classList.add('open'); profSidebar.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; }
+    function closeProfile() { profSidebar.classList.remove('open'); profBackdrop.classList.remove('open'); profSidebar.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; }
+
+    openBtn.addEventListener('click', openProfile);
+    if (closeBtn) closeBtn.addEventListener('click', closeProfile);
+    profBackdrop.addEventListener('click', closeProfile);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProfile(); });
+
+    if (copyId) {
+      copyId.addEventListener('click', () => {
+        navigator.clipboard.writeText(copyId.textContent.trim()).then(() => {
+          const orig = copyId.textContent;
+          copyId.textContent = '<%= t.systemSettings.copied %>';
+          copyId.style.color = 'var(--cyan-l)';
+          setTimeout(() => { copyId.textContent = orig; copyId.style.color = ''; }, 1500);
+        });
+      });
+    }
+
+    /* ── Lang select ── */
+    /* Custom dropdown wiring */
+    (function () {
+      var wrap=document.getElementById('lcs-wrap'),btn=document.getElementById('lcs-btn');
+      var flag=document.getElementById('lcs-flag'),lbl=document.getElementById('lcs-label');
+      var sel=document.getElementById('lang-select');
+      if(!wrap||!btn||!sel)return;
+      function openM(){wrap.classList.add('open');btn.setAttribute('aria-expanded','true');}
+      function closeM(){wrap.classList.remove('open');btn.setAttribute('aria-expanded','false');}
+      btn.addEventListener('click',function(e){e.stopPropagation();wrap.classList.contains('open')?closeM():openM();});
+      document.addEventListener('click',closeM);
+      document.addEventListener('keydown',function(e){if(e.key==='Escape')closeM();});
+      wrap.querySelectorAll('.lcs-item').forEach(function(item){
+        item.addEventListener('click',function(e){
+          e.stopPropagation();var val=item.getAttribute('data-value');
+          if(flag){var fi=flag.querySelector('.fi');if(fi){fi.className='fi fi-'+item.getAttribute('data-flag');}}
+          if(lbl)lbl.textContent=item.getAttribute('data-label')||val;
+          wrap.querySelectorAll('.lcs-item').forEach(function(i){i.classList.remove('lcs-active');});
+          item.classList.add('lcs-active');closeM();
+          sel.value=val;sel.dispatchEvent(new Event('change',{bubbles:true}));
+        });
+        item.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();item.click();}});
+      });
+    })();
+    document.getElementById('lang-select').addEventListener('change', function() {
+      const u = new URL(window.location.href);
+      u.searchParams.set('lang', this.value);
+      window.location.href = u.toString();
+    });
+  </script>
+
+  <!-- Page transition overlay -->
+  <div id="ov" style="position:fixed;inset:0;z-index:9999;background:#040010;animation:pIn .45s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none;"></div>
+  <style>
+    @keyframes pIn  { from { opacity:1 } to { opacity:0 } }
+    @keyframes pOut { from { opacity:0 } to { opacity:1 } }
+    #ov.leave { animation:pOut .35s cubic-bezier(.4,0,.2,1) forwards; pointer-events:all; }
+  </style>
+  <script>
+    (function () {
+      function fadeOut(href) { var ov=document.getElementById('ov'); ov.classList.add('leave'); setTimeout(function(){ window.location.href=href; },360); }
+      document.querySelectorAll('a.nav-link, a#logout-link').forEach(function(a){
+        a.addEventListener('click',function(e){ if(this.target==='_blank') return; e.preventDefault(); fadeOut(this.href); });
+      });
+    })();
+  </script>
+  <%- include('partials/promo_card') %>
+  <%- include('partials/footer') %>
+</body>
+</html>
+
+<%#
+  This project was programmed by the Next Generation team.
+  If you encounter any problems, open an Issue or log into the Discord server:
+  https://discord.gg/BhJStSa89s
+%>

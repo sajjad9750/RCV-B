@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+
+# Environment — NEVER commit real secrets
+.env
+.env.local
+.env.*.local
+
+# Database / runtime data
+database/*.json
+!database/.gitkeep
+
+# Dashboard per-guild database + uploads (runtime data)
+dashboard/database/
+dashboard/public/uploads/
+
+# Dashboard runtime data (logs, etc.)
+dashboard/data/
+
+# Runtime logs directory
+logs/
+
+# Cache directory (runtime emoji/guild cache)
+cache/
+
+# Dev/patch utility scripts starting with underscore — not for distribution
+_*.js
+_*.css
+_*.ts
+_verify.js
+
+# Backup files
+*.bak
+
+# Development/util scripts — not part of the distributable
+dashboard/i18n_transform.js
+dashboard/i18n_transform2.js
+
+# Vendored large libs
+dashboard/public/js/three.min.js
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+.VSCodeCounter/
+
+# Build / temp
+dist/
+build/
+tmp/
+.temp/
+
+# Test artifacts
+coverage/
+*.lcov
+
+# Lock files (let deployers manage their own)
+package-lock.json
+yarn.lock
+
+# Internal folders not for distribution
+cmd/
+configs/
+
